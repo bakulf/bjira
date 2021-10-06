@@ -18,6 +18,9 @@ class Query extends Command {
       const jira = new Jira(program);
       const opts = cmd.opts();
 
+      const resultFields = await jira.spin('Retrieving the fields...',
+                                           jira.api.listFields());
+
       let expectedResult = opts.limit;
       let issues = [];
 
@@ -55,16 +58,21 @@ class Query extends Command {
         if (issues.length >= result.total) break;
       }
 
-      const table = new Table({
-        chars: jira.tableChars,
-        head: ['Key', 'Status', 'Summary']
-      });
-
-      issues.forEach(issue => table.push([color.blue(issue.key),
-                                          color.green(issue.fields.status.name),
-                                          issue.fields.summary]))
-      console.log(table.toString());
+      Query.showIssues(jira, issues, resultFields);
     });
+  }
+
+  static showIssues(jira, issues, fields) {
+    const table = new Table({
+      chars: jira.tableChars,
+      head: ['Key', 'Status', 'Type', 'Summary']
+    });
+
+    issues.forEach(issue => table.push([color.blue(issue.key),
+                                        color.green(issue.fields.status.name),
+                                        color.green(issue.fields.issuetype.name),
+                                        issue.fields.summary]))
+    console.log(table.toString());
   }
 };
 

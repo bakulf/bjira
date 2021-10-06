@@ -29,7 +29,7 @@ class Issue extends Command {
         { 'Type': issue.fields['Issue Type'].name },
         { 'Project': issue.fields['Project'].name + ' (' + issue.fields['Project'].key + ')' },
         { 'Reporter': issue.fields['Reporter'].emailAddress },
-        { 'Assignee': issue.fields['Assignee'].emailAddress ? issue.fields['Assignee'].emailAddress : '(null)'},
+        { 'Assignee': issue.fields['Assignee'] ? issue.fields['Assignee'].emailAddress : '(null)'},
         { 'Priority': issue.fields['Priority'].name },
         { 'Epic Link': color.blue(issue.fields['Epic Link']) },
         { '': '' },
