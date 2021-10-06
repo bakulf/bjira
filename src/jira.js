@@ -39,6 +39,12 @@ class Jira {
       spinner.stop();
     }
   }
+
+  apiRequest(path, options = {}) {
+    return this.api.doRequest(this.api.makeRequestHeader(this.api.makeUri({
+      pathname: path,
+    }), options));
+  }
 };
 
 export default Jira;
