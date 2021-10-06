@@ -45,6 +45,7 @@ class Init extends Command {
           apiVersion: '2',
           strictSSL: true,
         },
+        presets: {},
       };
 
       fs.writeFileSync(opts.config, JSON.stringify(config, null, 2), 'utf8');

@@ -6,6 +6,7 @@ import Init from './init.js';
 import Issue from './issue.js';
 import Project from './project.js';
 import Query from './query.js';
+import Preset from './preset.js';
 
 const DEFAULT_CONFIG_FILE = path.join(os.homedir(), ".jira.json")
 
@@ -13,6 +14,7 @@ const commands = [
   new Init(),
   new Issue(),
   new Project(),
+  new Preset(),
   new Query(),
 ];
 
