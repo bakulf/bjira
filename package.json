@@ -1,6 +1,6 @@
 {
   "name": "jira",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "A simple jira CLI tool",
   "main": "src/index.js",
   "author": "baku",
