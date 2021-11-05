@@ -2,6 +2,7 @@ import color from 'chalk';
 import Table from 'cli-table3';
 
 import Command from './command.js';
+import ErrorHandler from './errorhandler.js';
 import Jira from './jira.js';
 
 const DEFAULT_QUERY_LIMIT = 20;
@@ -33,24 +34,12 @@ class Query extends Command {
                        maxResults: opts.limit - issues.length
                      }));
         } catch(e) {
-          const table = new Table({
-            chars: jira.tableChars,
-            head: ['Errors']
-          });
-
-          e.error.errorMessages.forEach(error => table.push([color.blue(error)]));
-          console.log(table.toString());
+          ErrorHandler.showError(jira, e);
           return;
         }
 
         if (result.warningMessages) {
-          const table = new Table({
-            chars: jira.tableChars,
-            head: ['Warnings']
-          });
-
-          result.warningMessages.forEach(warning => table.push([color.blue(warning)]));
-          console.log(table.toString());
+          ErrorHandler.showWarningMessages(result.warningMessages);
           return;
         }
 

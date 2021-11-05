@@ -135,49 +135,6 @@ class Create extends Command {
         newIssue.fields.description = epicAnswer.epicDescription;
       }
 
-/* TODO: priority doesn't work...
-      const priorityQuestion = [
-        {
-          type: 'confirm',
-          name: 'priority',
-          message: 'Do you want to set a priority?'
-        }
-      ];
-
-      // Ask for the issue name and type
-      const priorityAnswer = await inquirer.prompt(priorityQuestion);
-      if (priorityAnswer.priority) {
-        const priorities = await jira.spin('Retrieving priorities...',
-                                           jira.api.listPriorities());
-        const priorityNames = [];
-        const priorityIds = [];
-
-        priorities.forEach(priority => {
-          priorityNames.push(priority.name);
-          priorityIds.push(priority.id);
-        });
-
-        const priorityLevelQuestion = [
-          {
-            type: 'list',
-            name: 'priority',
-            message: 'Priority:',
-            choices: priorityNames,
-            filter: name => {
-              const pos = priorityNames.indexOf(name);
-              return {pos, name, id: priorityIds[pos]};
-            }
-          }
-        ];
-
-        // Ask for the issue name and type
-        const priorityLevelAnswer = await inquirer.prompt(priorityLevelQuestion);
-        newIssue.fields.priority = {
-          id: priorityLevelAnswer.priority.id
-        };
-      }
-*/
-
       const issue = await jira.spin('Creating the issue...', jira.api.addNewIssue(newIssue));
       let config = jira.config.jira;
 

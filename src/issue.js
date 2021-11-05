@@ -25,17 +25,33 @@ class Issue extends Command {
 
       table.push(
         { 'Summary': issue.fields['Summary'].trim() },
+        { 'URL:': color.blue(`${jira.config.jira.protocol}://${jira.config.jira.host}/browse/${id}`) },
         { 'Status': color.green(issue.fields['Status'].name) },
         { 'Type': issue.fields['Issue Type'].name },
         { 'Project': issue.fields['Project'].name + ' (' + issue.fields['Project'].key + ')' },
-        { 'Reporter': issue.fields['Reporter'].emailAddress },
-        { 'Assignee': issue.fields['Assignee'] ? issue.fields['Assignee'].emailAddress : '(null)'},
+        { 'Reporter': this.showUser(issue.fields['Reporter']) },
+        { 'Assignee': this.showUser(issue.fields['Assignee']) },
         { 'Priority': issue.fields['Priority'].name },
         { 'Epic Link': color.blue(issue.fields['Epic Link']) },
         { '': '' },
         { 'Created on': issue.fields['Created'] },
-        { 'Updated on': issue.fields['Updated'] }
+        { 'Updated on': issue.fields['Updated'] },
+        { '': '' },
+        { 'Description': issue.fields['Description'] },
+        { '': '' },
+        { 'Comments': issue.fields['Comment'].total },
       );
+
+      issue.fields['Comment'].comments.forEach(comment => {
+        table.push(
+          { '': '' },
+          { 'Comment': color.yellow(comment.id) },
+          { 'Author': this.showUser(comment.author) },
+          { 'Created on': comment['Created'] },
+          { 'Updated on': comment['Updated'] },
+          { 'Body': comment.body },
+        );
+      });
 
       console.log( table.toString() );
     });
@@ -64,6 +80,13 @@ class Issue extends Command {
     }
 
     return obj;
+  }
+
+  showUser(user) {
+    if (!user) return "(null)";
+    let str = user.displayName;
+    if (user.emailAddress) str += ` (${color.yellow(user.emailAddress)})`;
+    return str;
   }
 };
 
