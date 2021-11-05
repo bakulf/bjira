@@ -7,6 +7,10 @@ import Jira from './jira.js';
 const DEFAULT_QUERY_LIMIT = 20;
 
 class Issue extends Command {
+  static url(jira, id) {
+    return `${jira.config.jira.protocol}://${jira.config.jira.host}/browse/${id}`;
+  }
+
   addOptions(program) {
     const cmd = program.command('issue')
                        .description('Show an issue')
@@ -25,7 +29,7 @@ class Issue extends Command {
 
       table.push(
         { 'Summary': issue.fields['Summary'].trim() },
-        { 'URL:': color.blue(`${jira.config.jira.protocol}://${jira.config.jira.host}/browse/${id}`) },
+        { 'URL:': color.blue(Issue.url(jira, id)) },
         { 'Status': color.green(issue.fields['Status'].name) },
         { 'Type': issue.fields['Issue Type'].name },
         { 'Project': issue.fields['Project'].name + ' (' + issue.fields['Project'].key + ')' },

@@ -4,6 +4,7 @@ import Table from 'cli-table3';
 
 import Command from './command.js';
 import Jira from './jira.js';
+import Issue from './issue.js';
 
 class Create extends Command {
   addOptions(program) {
@@ -50,15 +51,20 @@ class Create extends Command {
         },
         {
           type: 'input',
-          name: 'issueName',
-          message: 'Please provide the issue name:',
+          name: 'summary',
+          message: 'Summary:',
           default: 'New Issue'
+        },
+        {
+          type: 'input',
+          name: 'description',
+          message: 'Description:'
         },
         {
           type: 'confirm',
           name: 'assign',
           message: 'Do you want to assign it?'
-        }
+        },
       ];
 
       // Ask for the issue name and type
@@ -70,12 +76,16 @@ class Create extends Command {
           project: {
             key: projectAnswer.project.key
           },
-          summary: issueAnswers.issueName,
+          summary: issueAnswers.summary,
           issuetype: {
             id: issueAnswers.issueType.id
           }
         }
       };
+
+      if (issueAnswers.description) {
+        newIssue.fields.description = issueAnswers.description;
+      }
 
       if (issueAnswers.assign) {
         const userList = await jira.spin('Retrieving users...', jira.api.getUsers(0, 1000));
@@ -122,25 +132,11 @@ class Create extends Command {
         }
       }
 
-      if (issueAnswers.issueType.name == 'Epic') {
-        const epicQuestion = [
-          {
-            type: 'input',
-            name: 'epicDescription',
-            message: 'Description:'
-          }
-        ];
-
-        const epicAnswer = await inquirer.prompt(epicQuestion);
-        newIssue.fields.description = epicAnswer.epicDescription;
-      }
-
       const issue = await jira.spin('Creating the issue...', jira.api.addNewIssue(newIssue));
-      let config = jira.config.jira;
 
       console.log('');
       console.log('New issue: ' + color.bold.red(issue.key));
-      console.log(config.protocol + '://' + config.host + '/browse/' + issue.key);
+      console.log(color.blue(Issue.url(jira, issue.key)));
       console.log('');
     });
   }
