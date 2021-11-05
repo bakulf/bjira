@@ -5,6 +5,7 @@ import Table from 'cli-table3';
 import Command from './command.js';
 import Jira from './jira.js';
 import Issue from './issue.js';
+import Project from './project.js';
 
 class Create extends Command {
   addOptions(program) {
@@ -13,41 +14,15 @@ class Create extends Command {
                        .action(async () => {
       const jira = new Jira(program);
 
-      const meta = await jira.spin('Retrieving metadata...',
-                                   jira.apiRequest('/issue/createmeta'));
-
-      const projectNames = [];
-      const projectKeys = [];
-      const issueTypes = [];
-
-      meta.projects.forEach(project => {
-        projectNames.push(project.name);
-        projectKeys.push(project.key);
-        issueTypes.push(project.issuetypes);
-      });
-
-      const projectQuestion = [
-        {
-          type: 'list',
-          name: 'project',
-          message: 'Project:',
-          choices: projectNames,
-          filter: name => {
-            const pos = projectNames.indexOf(name);
-            return {pos, name, key: projectKeys[pos]};
-          }
-        }
-      ];
-
-      const projectAnswer = await inquirer.prompt(projectQuestion);
+      const project = await Project.pickProject(jira);
 
       const issueQuestions = [
         {
           type: 'list',
           name: 'issueType',
           message: 'Issue type:',
-          choices: issueTypes[projectAnswer.project.pos],
-          filter: name => issueTypes[projectAnswer.project.pos].find(obj => obj.name === name)
+          choices: project.issueTypes,
+          filter: name => project.issueTypes.find(obj => obj.name === name)
         },
         {
           type: 'input',
@@ -74,7 +49,7 @@ class Create extends Command {
       const newIssue = {
         fields: {
           project: {
-            key: projectAnswer.project.key
+            key: project.key
           },
           summary: issueAnswers.summary,
           issuetype: {

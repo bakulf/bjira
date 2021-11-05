@@ -25,6 +25,13 @@ class Issue extends Command {
 
       const issue = Issue.replaceFields(result, resultFields);
 
+      let epicIssue = null;
+      if (issue.fields['Epic Link']) {
+        const epicResult = await jira.spin('Fetching the epic issue...',
+                                           jira.api.findIssue(issue.fields['Epic Link']));
+        epicIssue = Issue.replaceFields(epicResult, resultFields);
+      }
+
       const table = new Table({ chars: jira.tableChars });
 
       table.push(
@@ -36,7 +43,9 @@ class Issue extends Command {
         { 'Reporter': this.showUser(issue.fields['Reporter']) },
         { 'Assignee': this.showUser(issue.fields['Assignee']) },
         { 'Priority': issue.fields['Priority'].name },
-        { 'Epic Link': color.blue(issue.fields['Epic Link']) },
+        { 'Epic Link': this.showEpicIssue(epicIssue) },
+        { 'Labels': issue.fields['Labels'].join(', ') },
+        { 'Sprint': issue.fields['Sprint']?.map(sprint => this.showSprint(sprint)).join(', ') },
         { '': '' },
         { 'Created on': issue.fields['Created'] },
         { 'Updated on': issue.fields['Updated'] },
@@ -91,6 +100,15 @@ class Issue extends Command {
     let str = user.displayName;
     if (user.emailAddress) str += ` (${color.yellow(user.emailAddress)})`;
     return str;
+  }
+
+  showEpicIssue(issue) {
+    if (!issue) return "";
+    return `${color.blue(issue.key)} (${color.yellow(issue.fields['Summary'].trim())})`;
+  }
+
+  showSprint(sprint) {
+    return `${color.blue(sprint.name)} (${color.yellow(sprint.state)})`;
   }
 };
 

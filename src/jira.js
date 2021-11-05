@@ -45,6 +45,12 @@ class Jira {
       pathname: path,
     }), options));
   }
+
+  apiAgileRequest(path, options = {}) {
+    return this.api.doRequest(this.api.makeRequestHeader(this.api.makeAgileUri({
+      pathname: path,
+    }), options));
+  }
 };
 
 export default Jira;

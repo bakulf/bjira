@@ -10,6 +10,7 @@ import Query from './query.js';
 import Preset from './preset.js';
 import Run from './run.js';
 import Set from './set.js';
+import Sprint from './sprint.js';
 
 const DEFAULT_CONFIG_FILE = path.join(os.homedir(), ".jira.json")
 
@@ -22,6 +23,7 @@ const commands = [
   new Query(),
   new Run(),
   new Set(),
+  new Sprint(),
 ];
 
 program.version("0.0.1")
