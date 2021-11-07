@@ -10,110 +10,107 @@ import Project from './project.js';
 class Create extends Command {
   addOptions(program) {
     const cmd = program.command('create')
-                       .description('Create a new issue')
-                       .action(async () => {
-      const jira = new Jira(program);
+      .description('Create a new issue')
+      .action(async () => {
+        const jira = new Jira(program);
 
-      const project = await Project.pickProject(jira);
+        const project = await Project.pickProject(jira);
 
-      const issueQuestions = [
-        {
+        const issueQuestions = [{
           type: 'list',
           name: 'issueType',
           message: 'Issue type:',
           choices: project.issueTypes,
           filter: name => project.issueTypes.find(obj => obj.name === name)
-        },
-        {
+        }, {
           type: 'input',
           name: 'summary',
           message: 'Summary:',
           default: 'New Issue'
-        },
-        {
+        }, {
           type: 'input',
           name: 'description',
           message: 'Description:'
-        },
-        {
+        }, {
           type: 'confirm',
           name: 'assign',
           message: 'Do you want to assign it?'
-        },
-      ];
+        }, ];
 
-      // Ask for the issue name and type
-      const issueAnswers = await inquirer.prompt(issueQuestions);
+        // Ask for the issue name and type
+        const issueAnswers = await inquirer.prompt(issueQuestions);
 
-      // Create the issue object
-      const newIssue = {
-        fields: {
-          project: {
-            key: project.key
-          },
-          summary: issueAnswers.summary,
-          issuetype: {
-            id: issueAnswers.issueType.id
+        // Create the issue object
+        const newIssue = {
+          fields: {
+            project: {
+              key: project.key
+            },
+            summary: issueAnswers.summary,
+            issuetype: {
+              id: issueAnswers.issueType.id
+            }
           }
+        };
+
+        if (issueAnswers.description) {
+          newIssue.fields.description = issueAnswers.description;
         }
-      };
 
-      if (issueAnswers.description) {
-        newIssue.fields.description = issueAnswers.description;
-      }
+        if (issueAnswers.assign) {
+          const userList = await jira.spin('Retrieving users...', jira.api.getUsers(0, 1000));
+          const userNames = [];
+          const userIds = [];
+          userList.forEach(user => {
+            if (user.active) {
+              userNames.push(user.displayName);
+              userIds.push(user.accountId);
+            }
+          });
 
-      if (issueAnswers.assign) {
-        const userList = await jira.spin('Retrieving users...', jira.api.getUsers(0, 1000));
-        const userNames = [];
-        const userIds = [];
-        userList.forEach(user => {
-          if (user.active) {
-            userNames.push(user.displayName);
-            userIds.push(user.accountId);
-          }
-        });
-
-        const assigneeQuestion = [
-          {
+          const assigneeQuestion = [{
             type: 'list',
             name: 'assignee',
             message: 'Assignee:',
             choices: userNames,
             filter: name => {
               const pos = userNames.indexOf(name);
-              return {pos, name, id: userIds[pos]};
+              return {
+                pos,
+                name,
+                id: userIds[pos]
+              };
             }
-          }
-        ];
+          }];
 
-        const assigneeAnswer = await inquirer.prompt(assigneeQuestion);
-        newIssue.fields.assignee = { accountId: assigneeAnswer.assignee.id };
-      }
+          const assigneeAnswer = await inquirer.prompt(assigneeQuestion);
+          newIssue.fields.assignee = {
+            accountId: assigneeAnswer.assignee.id
+          };
+        }
 
-      if (issueAnswers.issueType.name === 'Task') {
-        const parentIssueQuestion = [
-          {
+        if (issueAnswers.issueType.name === 'Task') {
+          const parentIssueQuestion = [{
             type: 'input',
             name: 'issueParentName',
             message: 'Please provide the epic:'
+          }];
+
+          const parentIssueAnswer = await inquirer.prompt(parentIssueQuestion);
+          if (parentIssueAnswer.issueParentName !== '') {
+            newIssue.fields.parent = {
+              key: parentIssueAnswer.issueParentName
+            };
           }
-        ];
-
-        const parentIssueAnswer = await inquirer.prompt(parentIssueQuestion);
-        if (parentIssueAnswer.issueParentName !== '') {
-          newIssue.fields.parent = {
-            key: parentIssueAnswer.issueParentName
-          };
         }
-      }
 
-      const issue = await jira.spin('Creating the issue...', jira.api.addNewIssue(newIssue));
+        const issue = await jira.spin('Creating the issue...', jira.api.addNewIssue(newIssue));
 
-      console.log('');
-      console.log('New issue: ' + color.bold.red(issue.key));
-      console.log(color.blue(Issue.url(jira, issue.key)));
-      console.log('');
-    });
+        console.log('');
+        console.log('New issue: ' + color.bold.red(issue.key));
+        console.log(color.blue(Issue.url(jira, issue.key)));
+        console.log('');
+      });
   }
 };
 

@@ -9,57 +9,59 @@ import Project from './project.js';
 class Sprint extends Command {
   addOptions(program) {
     const sprintCmd = program.command('sprint')
-                       .description('Play with sprints');
+      .description('Play with sprints');
     sprintCmd.command('add')
-             .description('Add an issue to a sprint')
-             .argument('<id>', 'The issue ID')
-             .action(async id => {
-      const jira = new Jira(program);
+      .description('Add an issue to a sprint')
+      .argument('<id>', 'The issue ID')
+      .action(async id => {
+        const jira = new Jira(program);
 
-      const sprintId = await Sprint.pickSprint(jira);
-      if (sprintId === 0) {
-        console.log("No active sprints");
-        return;
-      }
+        const sprintId = await Sprint.pickSprint(jira);
+        if (sprintId === 0) {
+          console.log("No active sprints");
+          return;
+        }
 
-      try {
-        await jira.spin('Adding the issue to the sprint...',
-                        jira.apiAgileRequest(`/sprint/${sprintId}/issue`,{
-                          method: 'POST',
-                          followAllRedirects: true,
-                          body: {
-                            issues: [id]
-                        }}));
-      } catch(e) {
-        ErrorHandler.showError(jira, e);
-      }
-    });
+        try {
+          await jira.spin('Adding the issue to the sprint...',
+            jira.apiAgileRequest(`/sprint/${sprintId}/issue`, {
+              method: 'POST',
+              followAllRedirects: true,
+              body: {
+                issues: [id]
+              }
+            }));
+        } catch (e) {
+          ErrorHandler.showError(jira, e);
+        }
+      });
 
     sprintCmd.command('remove')
-             .description('Remove an issue from a sprint')
-             .argument('<id>', 'The issue ID')
-             .action(async id => {
-      const jira = new Jira(program);
+      .description('Remove an issue from a sprint')
+      .argument('<id>', 'The issue ID')
+      .action(async id => {
+        const jira = new Jira(program);
 
-      try {
-        await jira.spin('Adding the issue to the sprint...',
-                        jira.apiAgileRequest("/backlog/issue",{
-                          method: 'POST',
-                          followAllRedirects: true,
-                          body: {
-                            issues: [id]
-                          }}));
-      } catch(e) {
-        ErrorHandler.showError(jira, e);
-      }
-    });
+        try {
+          await jira.spin('Adding the issue to the sprint...',
+            jira.apiAgileRequest("/backlog/issue", {
+              method: 'POST',
+              followAllRedirects: true,
+              body: {
+                issues: [id]
+              }
+            }));
+        } catch (e) {
+          ErrorHandler.showError(jira, e);
+        }
+      });
   }
 
   static async pickSprint(jira) {
     const project = await Project.pickProject(jira);
     const boardList = await jira.spin('Retrieving boards...',
-                                      jira.api.getAllBoards(undefined, undefined, undefined, undefined,
-                                                            project.key));
+      jira.api.getAllBoards(undefined, undefined, undefined, undefined,
+        project.key));
 
     const boardNames = [];
     const boardIds = [];
@@ -69,23 +71,25 @@ class Sprint extends Command {
       boardIds.push(board.id);
     });
 
-    const boardQuestion = [
-      {
-        type: 'list',
-        name: 'board',
-        message: 'Board:',
-        choices: boardNames,
-        filter: name => {
-          const pos = boardNames.indexOf(name);
-          return {pos, name, id: boardIds[pos]};
-        }
+    const boardQuestion = [{
+      type: 'list',
+      name: 'board',
+      message: 'Board:',
+      choices: boardNames,
+      filter: name => {
+        const pos = boardNames.indexOf(name);
+        return {
+          pos,
+          name,
+          id: boardIds[pos]
+        };
       }
-    ];
+    }];
 
     const boardAnswer = await inquirer.prompt(boardQuestion);
 
     const sprintList = await jira.spin('Retrieving sprints...',
-                                      jira.api.getAllSprints(boardAnswer.board.id));
+      jira.api.getAllSprints(boardAnswer.board.id));
 
     const sprintNames = [];
     const sprintIds = [];
@@ -104,18 +108,20 @@ class Sprint extends Command {
     let sprintId = sprintIds[0];
 
     if (sprintNames.length > 1) {
-      const sprintQuestion = [
-        {
-          type: 'list',
-          name: 'sprint',
-          message: 'Board:',
-          choices: sprintNames,
-          filter: name => {
-            const pos = sprintNames.indexOf(name);
-            return {pos, name, id: sprintIds[pos]};
-          }
+      const sprintQuestion = [{
+        type: 'list',
+        name: 'sprint',
+        message: 'Board:',
+        choices: sprintNames,
+        filter: name => {
+          const pos = sprintNames.indexOf(name);
+          return {
+            pos,
+            name,
+            id: sprintIds[pos]
+          };
         }
-      ];
+      }];
 
       const sprintAnswer = await inquirer.prompt(sprintQuestion);
       sprintId = sprintAnswer.sprint.id;

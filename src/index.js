@@ -18,8 +18,8 @@ const commands = [
   new Create(),
   new Init(),
   new Issue(),
-  new Project(),
   new Preset(),
+  new Project(),
   new Query(),
   new Run(),
   new Set(),
@@ -29,8 +29,8 @@ const commands = [
 program.version("0.0.1")
 
 program.option('-c, --config <file>',
-               `config file. Default: ${DEFAULT_CONFIG_FILE}`,
-               DEFAULT_CONFIG_FILE)
+  `config file`,
+  DEFAULT_CONFIG_FILE)
 commands.forEach(command => command.addOptions(program));
 
 program.parseAsync(process.argv);

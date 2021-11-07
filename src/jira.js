@@ -16,15 +16,32 @@ class Jira {
     this._jiraClient = new jiraClient(this._config.jira);
   }
 
-  get api() { return this._jiraClient; }
+  get api() {
+    return this._jiraClient;
+  }
 
-  get config() { return this._config; }
+  get config() {
+    return this._config;
+  }
 
   get tableChars() {
-    return { 'top': ' ', 'top-mid': '', 'top-left': '', 'top-right': '',
-             'bottom': ' ', 'bottom-mid': '', 'bottom-left': '', 'bottom-right': '',
-             'left': ' ', 'left-mid': '', 'mid': '', 'mid-mid': '', 'right': '',
-             'right-mid': '', 'middle': ' ' };
+    return {
+      'top': ' ',
+      'top-mid': '',
+      'top-left': '',
+      'top-right': '',
+      'bottom': ' ',
+      'bottom-mid': '',
+      'bottom-left': '',
+      'bottom-right': '',
+      'left': ' ',
+      'left-mid': '',
+      'mid': '',
+      'mid-mid': '',
+      'right': '',
+      'right-mid': '',
+      'middle': ' '
+    };
   }
 
   async spin(msg, promise) {
@@ -33,7 +50,7 @@ class Jira {
     try {
       const result = await promise;
       return result;
-    } catch(e) {
+    } catch (e) {
       throw e;
     } finally {
       spinner.stop();
