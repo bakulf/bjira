@@ -11,7 +11,7 @@ class Preset extends Command {
       .description('Touch preset queries');
     presetCmd.command('create')
       .description('create a new preset')
-      .argument('<name>', 'the name of the preest')
+      .argument('<name>', 'the name of the preset (use $$$ for variables)')
       .argument('<query>', 'the query')
       .action(async (name, query) => {
         const jira = new Jira(program);

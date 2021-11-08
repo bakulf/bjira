@@ -25,6 +25,22 @@ class Run extends Command {
           return;
         }
 
+        let query = jira.config.presets[name];
+        for (let i = 2; i < program.args.length; ++i) {
+          const arg = program.args[i];
+          if (!query.includes("$$$")) {
+            console.log("Too many aguments for this query");
+            return;
+          }
+
+          query = query.replace('$$$', this.escape(arg));
+        }
+
+        if (query.includes("$$$")) {
+          console.log("More arguments are needed");
+          return;
+        }
+
         const resultFields = await jira.spin('Retrieving the fields...',
           jira.api.listFields());
 
@@ -35,7 +51,7 @@ class Run extends Command {
           let result;
           try {
             result = await jira.spin('Running query...',
-              jira.api.searchJira(jira.config.presets[name], {
+              jira.api.searchJira(query, {
                 startAt: issues.lengh,
                 maxResults: opts.limit - issues.length
               }));
@@ -55,6 +71,10 @@ class Run extends Command {
 
         Query.showIssues(jira, issues, resultFields);
       });
+  }
+
+  escape(str) {
+    return str.replace(/\"/g, '\\\"');
   }
 };
 
