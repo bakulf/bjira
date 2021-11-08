@@ -71,6 +71,8 @@ class Issue extends Command {
         }, {
           'Labels': issue.fields['Labels'].join(', ')
         }, {
+          'Story points': issue.fields['Story Points'] || "unset"
+        }, {
           'Sprint': issue.fields['Sprint']?.map(sprint => this.showSprint(sprint)).join(', ')
         }, {
           '': ''
