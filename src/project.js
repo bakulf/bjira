@@ -30,6 +30,18 @@ class Project extends Command {
     const meta = await jira.spin('Retrieving metadata...',
       jira.apiRequest('/issue/createmeta'));
 
+    meta.projects.sort((a, b) => {
+      if (a.key === jira.latestProject) {
+        return -1;
+      }
+
+      if (b.key === jira.latestProject) {
+        return 1;
+      }
+
+      return a.name > b.name;
+    });
+
     const projectNames = [];
     const projectKeys = [];
     const issueTypes = [];
@@ -56,6 +68,10 @@ class Project extends Command {
     }];
 
     const projectAnswer = await inquirer.prompt(projectQuestion);
+
+    jira.latestProject = projectAnswer.project.key
+    jira.syncConfig();
+
     return {
       issueTypes: issueTypes[projectAnswer.project.pos],
       ...projectAnswer.project

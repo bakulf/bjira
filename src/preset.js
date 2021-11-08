@@ -1,6 +1,5 @@
 import color from 'chalk';
 import inquirer from 'inquirer';
-import fs from 'fs';
 import Table from 'cli-table3';
 
 import Command from './command.js';
@@ -15,7 +14,6 @@ class Preset extends Command {
       .argument('<name>', 'the name of the preest')
       .argument('<query>', 'the query')
       .action(async (name, query) => {
-        const opts = program.opts();
         const jira = new Jira(program);
 
         if (name in jira.config.presets) {
@@ -24,27 +22,25 @@ class Preset extends Command {
         }
 
         jira.config.presets[name] = query;
-        fs.writeFileSync(opts.config, JSON.stringify(jira.config, null, 2), 'utf8');
-        console.log('Config file succesfully updated');
+        jira.syncConfig();
 
+        console.log('Config file succesfully updated');
       });
 
     presetCmd.command('remove')
       .description('remove a preset')
       .argument('<name>', 'the name of the preest')
       .action(async name => {
-        const opts = program.opts();
         const jira = new Jira(program);
 
         delete jira.config.presets[name];
-        fs.writeFileSync(opts.config, JSON.stringify(jira.config, null, 2), 'utf8');
+        jira.syncConfig();
         console.log('Config file succesfully updated');
       });
 
     presetCmd.command('list')
       .description('list the presets')
       .action(async () => {
-        const opts = program.opts();
         const jira = new Jira(program);
 
         const table = new Table({

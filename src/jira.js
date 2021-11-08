@@ -5,15 +5,24 @@ import ora from 'ora';
 class Jira {
   constructor(program) {
     const opts = program.opts();
+    this.configFile = opts.config;
 
-    if (!fs.existsSync(opts.config)) {
-      console.log(`Config file ${opts.config} does not exist.`);
+    if (!fs.existsSync(this.configFile)) {
+      console.log(`Config file ${this.configFile} does not exist.`);
       process.exit();
       return;
     }
 
-    this._config = JSON.parse(fs.readFileSync(opts.config));
+    this._config = JSON.parse(fs.readFileSync(this.configFile));
     this._jiraClient = new jiraClient(this._config.jira);
+  }
+
+  get latestProject() {
+    return this._config.latestProject || null
+  }
+
+  set latestProject(latestProject) {
+    this._config.latestProject = latestProject;
   }
 
   get api() {
@@ -67,6 +76,10 @@ class Jira {
     return this.api.doRequest(this.api.makeRequestHeader(this.api.makeAgileUri({
       pathname: path,
     }), options));
+  }
+
+  syncConfig() {
+    fs.writeFileSync(this.configFile, JSON.stringify(this.config, null, 2), 'utf8');
   }
 };
 
