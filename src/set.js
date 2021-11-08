@@ -14,7 +14,7 @@ class Set extends Command {
       .action(async id => {
         const jira = new Jira(program);
 
-        const userList = await jira.spin('Retrieving users...', jira.api.getUsers(0, 1000));
+        const userList = await User.pickUser(jira);
         const userNames = [];
         const userIds = [];
         userList.forEach(user => {

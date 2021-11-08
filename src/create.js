@@ -6,6 +6,7 @@ import Command from './command.js';
 import Jira from './jira.js';
 import Issue from './issue.js';
 import Project from './project.js';
+import User from './user.js';
 
 class Create extends Command {
   addOptions(program) {
@@ -58,7 +59,8 @@ class Create extends Command {
         }
 
         if (issueAnswers.assign) {
-          const userList = await jira.spin('Retrieving users...', jira.api.getUsers(0, 1000));
+          const userList = await User.pickUser(jira);
+
           const userNames = [];
           const userIds = [];
           userList.forEach(user => {
