@@ -15,6 +15,7 @@ class Issue extends Command {
   addOptions(program) {
     const cmd = program.command('issue')
       .description('Show an issue')
+      .option('-C, --comments')
       .argument('<id>', 'The issue ID')
       .action(async id => {
         const jira = new Jira(program);
@@ -87,21 +88,23 @@ class Issue extends Command {
           'Comments': issue.fields['Comment'].total
         }, );
 
-        issue.fields['Comment'].comments.forEach(comment => {
-          table.push({
-            '': ''
-          }, {
-            'Comment': color.yellow(comment.id)
-          }, {
-            'Author': this.showUser(comment.author)
-          }, {
-            'Created on': comment['Created']
-          }, {
-            'Updated on': comment['Updated']
-          }, {
-            'Body': comment.body
-          }, );
-        });
+        if (cmd.opts().comments) {
+          issue.fields['Comment'].comments.forEach(comment => {
+            table.push({
+              '': ''
+            }, {
+              'Comment': color.yellow(comment.id)
+            }, {
+              'Author': this.showUser(comment.author)
+            }, {
+              'Created on': comment['Created']
+            }, {
+              'Updated on': comment['Updated']
+            }, {
+              'Body': comment.body
+            }, );
+          });
+        }
 
         console.log(table.toString());
       });
