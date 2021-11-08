@@ -2,6 +2,7 @@ import color from 'chalk';
 import Table from 'cli-table3';
 
 import Command from './command.js';
+import ErrorHandler from './errorhandler.js'
 import Jira from './jira.js';
 
 const DEFAULT_QUERY_LIMIT = 20;
@@ -18,10 +19,22 @@ class Issue extends Command {
       .action(async id => {
         const jira = new Jira(program);
 
-        const resultFields = await jira.spin('Retrieving the fields...',
-          jira.api.listFields());
-        const result = await jira.spin('Running query...',
-          jira.api.findIssue(id));
+        let resultFields;
+        try {
+          resultFields = await jira.spin('Retrieving the fields...',
+            jira.api.listFields());
+        } catch (e) {
+          ErrorHandler.showError(jira, e);
+          return;
+        }
+
+        let result;
+        try {
+          result = await jira.spin('Running query...', jira.api.findIssue(id));
+        } catch (e) {
+          ErrorHandler.showError(jira, e);
+          return;
+        }
 
         const issue = Issue.replaceFields(result, resultFields);
 
