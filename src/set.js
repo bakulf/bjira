@@ -4,6 +4,7 @@ import Command from './command.js';
 import Field from './field.js';
 import Jira from './jira.js';
 import ErrorHandler from './errorhandler.js';
+import User from './user.js';
 
 class Set extends Command {
   addOptions(program) {

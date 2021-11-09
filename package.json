@@ -1,6 +1,6 @@
 {
   "name": "bjira",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "A simple jira CLI tool",
   "main": "src/index.js",
   "author": {
