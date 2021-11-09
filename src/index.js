@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 import program from 'commander';
+import fs from 'fs';
 import os from 'os';
 import path from 'path';
 
@@ -32,7 +33,9 @@ const commands = [
   new Sprint(),
 ];
 
-program.version("0.0.1")
+const pjson = JSON.parse(fs.readFileSync(new URL("../package.json",
+  import.meta.url)));
+program.version(pjson.version);
 
 program.option('-c, --config <file>',
   `config file`,
