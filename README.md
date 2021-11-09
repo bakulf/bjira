@@ -2,13 +2,13 @@
 
 This is a simple Jira CLI tool. License: MIT
 
-# How to install it
+## How to install it
 
 ```
 $ npm install -g bjira
 ```
 
-# How to configure it
+## How to configure it
 
 Run `bjira init` to set up the tool. You can optain the API token from your
 jira settings.
@@ -22,7 +22,7 @@ $ bjira init
 Config file succesfully created in: /home/baku/.bjira.json
 ```
 
-# How to use it
+## How to use it
 
 Run `bjira help` to see the main help menu. Each command is well documented.
 
@@ -30,7 +30,7 @@ There are 2 main concepts to know:
 - presets
 - custom fields.
 
-## Presets
+### Presets
 
 Let's say you want to retrieve all the open issues assigned to you for project
 FOO.  The query is something like this:
@@ -49,7 +49,14 @@ Then, you can run it using its query name:
 bjira run mine
 ```
 
-## Custom fields
+If you want to have parameters in your query, use `$$$` as placeholder. For instance:
+```
+bjira preset create search 'project = "FOO" AND text ~ "$$$" ORDER BY created DESC'
+bjira run search "hello world"
+```
+
+
+### Custom fields
 Jira is strongly configurable via custom fields. You can retrieve the list of custom fields using:
 
 ```
