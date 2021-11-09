@@ -1,6 +1,6 @@
 {
   "name": "bjira",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "A simple jira CLI tool",
   "main": "src/index.js",
   "author": {
@@ -12,10 +12,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/bakulf/jira.git"
+    "url": "git://github.com/bakulf/bjira.git"
   },
   "bugs": {
-    "url": "https://github.com/bakulf/jira/issues"
+    "url": "https://github.com/bakulf/bjira/issues"
   },
   "license": "MIT",
   "type": "module",
