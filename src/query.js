@@ -4,6 +4,7 @@ import Table from 'cli-table3';
 import Command from './command.js';
 import ErrorHandler from './errorhandler.js';
 import Field from './field.js';
+import Issue from './issue.js';
 import Jira from './jira.js';
 
 const DEFAULT_QUERY_LIMIT = 20;
@@ -60,12 +61,13 @@ class Query extends Command {
   static showIssues(jira, issues, fields) {
     const table = new Table({
       chars: jira.tableChars,
-      head: ['Key', 'Status', 'Type', 'Summary']
+      head: ['Key', 'Status', 'Type', 'Assignee', 'Summary']
     });
 
     issues.forEach(issue => table.push([color.blue(issue.key),
       color.green(issue.fields.status.name),
       color.green(issue.fields.issuetype.name),
+      Issue.showUser(issue.fields.assignee),
       issue.fields.summary
     ]))
     console.log(table.toString());

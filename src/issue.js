@@ -61,9 +61,9 @@ class Issue extends Command {
         }, {
           'Project': issue.fields['Project'].name + ' (' + issue.fields['Project'].key + ')'
         }, {
-          'Reporter': this.showUser(issue.fields['Reporter'])
+          'Reporter': Issue.showUser(issue.fields['Reporter'])
         }, {
-          'Assignee': this.showUser(issue.fields['Assignee'])
+          'Assignee': Issue.showUser(issue.fields['Assignee'])
         }, {
           'Priority': issue.fields['Priority'].name
         }, {
@@ -103,7 +103,7 @@ class Issue extends Command {
             }, {
               'Comment': color.yellow(comment.id)
             }, {
-              'Author': this.showUser(comment.author)
+              'Author': Issue.showUser(comment.author)
             }, {
               'Created on': comment['Created']
             }, {
@@ -143,7 +143,7 @@ class Issue extends Command {
     return obj;
   }
 
-  showUser(user) {
+  static showUser(user) {
     if (!user) return "(null)";
     let str = user.displayName;
     if (user.emailAddress) str += ` (${color.yellow(user.emailAddress)})`;
