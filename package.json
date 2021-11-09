@@ -1,14 +1,28 @@
 {
-  "name": "jira",
+  "name": "bjira",
   "version": "0.0.1",
   "description": "A simple jira CLI tool",
   "main": "src/index.js",
-  "author": "baku",
+  "author": {
+    "name": "Andrea Marchesini",
+    "email": "baku@thembi.me"
+  },
+  "bin": {
+    "jira": "src/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/bakulf/jira.git"
+  },
+  "bugs": {
+    "url": "https://github.com/bakulf/jira/issues"
+  },
   "license": "MIT",
   "type": "module",
   "dependencies": {
     "cli-table3": "^0.6.0",
     "commander": "^8.2.0",
+    "execa": "^5.1.1",
     "inquirer": "^8.2.0",
     "jira-client": "^6.22.0",
     "ora": "^6.0.1",
