@@ -25,6 +25,22 @@ class Jira {
     this._config.latestProject = latestProject;
   }
 
+  addField(fieldName) {
+    if (!Array.isArray(this._config.fields)) this._config.fields = [];
+
+    this._config.fields.push(fieldName);
+  }
+
+  removeField(fieldName) {
+    if (!Array.isArray(this._config.fields) || this._config.fields.indexOf(fieldName) === -1) return;
+
+    this._config.fields.splice(this._config.fields.indexOf(fieldName), 1);
+  }
+
+  get fields() {
+    return this._config.fields || [];
+  }
+
   get api() {
     return this._jiraClient;
   }

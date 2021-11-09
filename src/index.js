@@ -4,6 +4,7 @@ import path from 'path';
 
 import Comment from './comment.js';
 import Create from './create.js';
+import Field from './field.js';
 import Init from './init.js';
 import Issue from './issue.js';
 import Preset from './preset.js';
@@ -18,6 +19,7 @@ const DEFAULT_CONFIG_FILE = path.join(os.homedir(), ".jira.json")
 const commands = [
   new Comment(),
   new Create(),
+  new Field(),
   new Init(),
   new Issue(),
   new Preset(),

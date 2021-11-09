@@ -3,6 +3,7 @@ import Table from 'cli-table3';
 
 import Command from './command.js';
 import ErrorHandler from './errorhandler.js'
+import Field from './field.js';
 import Jira from './jira.js';
 
 const DEFAULT_QUERY_LIMIT = 20;
@@ -22,8 +23,7 @@ class Issue extends Command {
 
         let resultFields;
         try {
-          resultFields = await jira.spin('Retrieving the fields...',
-            jira.api.listFields());
+          resultFields = await Field.listFields(jira);
         } catch (e) {
           ErrorHandler.showError(jira, e);
           return;
@@ -71,10 +71,16 @@ class Issue extends Command {
         }, {
           'Labels': issue.fields['Labels'].join(', ')
         }, {
-          'Story points': issue.fields['Story Points'] || "unset"
-        }, {
           'Sprint': issue.fields['Sprint']?.map(sprint => this.showSprint(sprint)).join(', ')
-        }, {
+        }, );
+
+        jira.fields.forEach(fieldName => {
+          const data = {};
+          data[fieldName] = issue.fields[fieldName] || "unset"
+          table.push(data);
+        });
+
+        table.push({
           '': ''
         }, {
           'Created on': issue.fields['Created']

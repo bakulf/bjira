@@ -3,6 +3,7 @@ import Table from 'cli-table3';
 
 import Command from './command.js';
 import ErrorHandler from './errorhandler.js';
+import Field from './field.js';
 import Jira from './jira.js';
 import Query from './query.js';
 
@@ -41,8 +42,13 @@ class Run extends Command {
           return;
         }
 
-        const resultFields = await jira.spin('Retrieving the fields...',
-          jira.api.listFields());
+        let resultFields;
+        try {
+          resultFields = await Field.listFields(jira);
+        } catch (e) {
+          ErrorHandler.showError(jira, e);
+          return;
+        }
 
         let expectedResult = opts.limit;
         let issues = [];

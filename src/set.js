@@ -1,6 +1,7 @@
 import inquirer from 'inquirer';
 
 import Command from './command.js';
+import Field from './field.js';
 import Jira from './jira.js';
 import ErrorHandler from './errorhandler.js';
 
@@ -98,46 +99,34 @@ class Set extends Command {
         }
       });
 
-    setCmd.command('storypoint')
-      .description('Set the story point')
+    setCmd.command('custom')
+      .description('Set a custom field')
+      .argument('<field>', 'The field name')
       .argument('<id>', 'The issue ID')
-      .action(async id => {
+      .action(async (fieldName, id) => {
         const jira = new Jira(program);
 
+        const fieldData = await Field.getFieldDataIfSupported(jira, fieldName);
+        if (!fieldData) {
+          console.log("Unsupported field type");
+          return;
+        }
+
         const question = [{
-          type: 'number',
-          name: 'point',
-          message: 'Story point:',
+          type: fieldData.type,
+          name: 'value',
+          message: `${fieldName}:`,
         }];
 
         const answer = await inquirer.prompt(question);
 
-        let resultFields;
-        try {
-          resultFields = await jira.spin('Retrieving the fields...',
-            jira.api.listFields());
-        } catch (e) {
-          ErrorHandler.showError(jira, e);
-          return;
-        }
-
-        let key;
-        resultFields.forEach(field => {
-          if (field.name === "Story Points") key = field.key;
-        });
-
-        if (!key) {
-          console.log("Unable to find the story-point field.");
-          return;
-        }
-
-        const storyPoint = {};
-        storyPoint[key] = answer.point;
+        const data = {};
+        data[fieldData.key] = answer.value;
 
         try {
           await jira.spin('Updating the issue...', jira.api.updateIssue(id, {
             fields: {
-              ...storyPoint
+              ...data
             }
           }));
         } catch (e) {
