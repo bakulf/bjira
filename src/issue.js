@@ -1,10 +1,10 @@
 import color from 'chalk';
-import Table from 'cli-table3';
 
 import Command from './command.js';
 import ErrorHandler from './errorhandler.js'
 import Field from './field.js';
 import Jira from './jira.js';
+import Table from './table.js';
 
 const DEFAULT_QUERY_LIMIT = 20;
 
@@ -46,71 +46,92 @@ class Issue extends Command {
           epicIssue = Issue.replaceFields(epicResult, resultFields);
         }
 
-        const table = new Table({
-          chars: jira.tableChars
-        });
+        const table = new Table({});
 
-        table.push({
-          'Summary': issue.fields['Summary'].trim()
-        }, {
-          'URL:': color.blue(Issue.url(jira, id))
-        }, {
-          'Status': color.green(issue.fields['Status'].name)
-        }, {
-          'Type': issue.fields['Issue Type'].name
-        }, {
-          'Project': issue.fields['Project'].name + ' (' + issue.fields['Project'].key + ')'
-        }, {
-          'Reporter': Issue.showUser(issue.fields['Reporter'])
-        }, {
-          'Assignee': Issue.showUser(issue.fields['Assignee'])
-        }, {
-          'Priority': issue.fields['Priority'].name
-        }, {
-          'Epic Link': this.showEpicIssue(epicIssue)
-        }, {
-          'Labels': issue.fields['Labels'].join(', ')
-        }, {
-          'Sprint': issue.fields['Sprint']?.map(sprint => this.showSprint(sprint)).join(', ')
-        }, );
+        table.addRows([
+          [
+            'Summary', issue.fields['Summary'].trim()
+          ],
+          [
+            'URL', color.blue(Issue.url(jira, id))
+          ],
+          [
+            'Status', color.green(issue.fields['Status'].name)
+          ],
+          [
+            'Type', issue.fields['Issue Type'].name
+          ],
+          [
+            'Project', issue.fields['Project'].name + ' (' + issue.fields['Project'].key + ')'
+          ],
+          [
+            'Reporter', Issue.showUser(issue.fields['Reporter'])
+          ],
+          [
+            'Assignee', Issue.showUser(issue.fields['Assignee'])
+          ],
+          [
+            'Priority', issue.fields['Priority'].name
+          ],
+          [
+            'Epic Link', this.showEpicIssue(epicIssue)
+          ],
+          [
+            'Labels', issue.fields['Labels'].join(', ')
+          ],
+          [
+            'Sprint', issue.fields['Sprint']?.map(sprint => this.showSprint(sprint)).join(', ')
+          ]
+        ]);
 
-        jira.fields.forEach(fieldName => {
-          const data = {};
-          data[fieldName] = issue.fields[fieldName] || "unset"
-          table.push(data);
-        });
+        jira.fields.forEach(fieldName => table.addRow([fieldName, issue.fields[fieldName] || "unset"]));
 
-        table.push({
-          '': ''
-        }, {
-          'Created on': issue.fields['Created']
-        }, {
-          'Updated on': issue.fields['Updated']
-        }, {
-          '': ''
-        }, {
-          'Description': issue.fields['Description']
-        }, {
-          '': ''
-        }, {
-          'Comments': issue.fields['Comment'].total
-        }, );
+        table.addRows([
+          [
+            '', ''
+          ],
+          [
+            'Created on', issue.fields['Created']
+          ],
+          [
+            'Updated on', issue.fields['Updated']
+          ],
+          [
+            '', ''
+          ],
+          [
+            'Description', issue.fields['Description']
+          ],
+          [
+            '', ''
+          ],
+          [
+            'Comments', issue.fields['Comment'].total
+          ]
+        ]);
 
         if (cmd.opts().comments) {
           issue.fields['Comment'].comments.forEach(comment => {
-            table.push({
-              '': ''
-            }, {
-              'Comment': color.yellow(comment.id)
-            }, {
-              'Author': Issue.showUser(comment.author)
-            }, {
-              'Created on': comment['Created']
-            }, {
-              'Updated on': comment['Updated']
-            }, {
-              'Body': comment.body
-            }, );
+            table.addRows([
+              [
+                '', ''
+              ],
+              [
+                'Comment', color.yellow(comment.id)
+              ],
+              [
+                'Author', Issue.showUser(comment.author)
+              ],
+              [
+                'Created on', comment['Created']
+              ],
+              [
+                'Updated on', comment['Updated']
+              ],
+              [
+                'Body', comment.body
+              ]
+            ]);
           });
         }
 

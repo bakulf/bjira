@@ -1,5 +1,4 @@
 import color from 'chalk';
-import Table from 'cli-table3';
 
 import Command from './command.js';
 import ErrorHandler from './errorhandler.js';

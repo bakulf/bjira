@@ -1,9 +1,9 @@
 import color from 'chalk';
 import inquirer from 'inquirer';
-import Table from 'cli-table3';
 
 import Command from './command.js';
 import Jira from './jira.js';
+import Table from './table.js';
 
 class Preset extends Command {
   addOptions(program) {
@@ -44,11 +44,10 @@ class Preset extends Command {
         const jira = new Jira(program);
 
         const table = new Table({
-          chars: jira.tableChars,
           head: ['Name', 'Query']
         });
 
-        Object.keys(jira.config.presets).forEach(key => table.push([color.blue(key),
+        Object.keys(jira.config.presets).forEach(key => table.addRow([color.blue(key),
           color.green(jira.config.presets[key])
         ]));
         console.log(table.toString());

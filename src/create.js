@@ -1,6 +1,5 @@
 import color from 'chalk';
 import inquirer from 'inquirer';
-import Table from 'cli-table3';
 
 import Command from './command.js';
 import Jira from './jira.js';

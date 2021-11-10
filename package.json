@@ -24,7 +24,6 @@
   },
   "engineStrict": true,
   "dependencies": {
-    "cli-table3": "^0.6.0",
     "commander": "^8.2.0",
     "execa": "^5.1.1",
     "inquirer": "^8.2.0",

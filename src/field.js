@@ -1,9 +1,9 @@
 import color from 'chalk';
-import Table from 'cli-table3';
 
 import Command from './command.js';
 import ErrorHandler from './errorhandler.js';
 import Jira from './jira.js';
+import Table from './table.js';
 
 class Field extends Command {
   addOptions(program) {
@@ -23,13 +23,12 @@ class Field extends Command {
         }
 
         const table = new Table({
-          chars: jira.tableChars,
           head: ['Name', 'Supported', 'Type']
         });
 
         resultFields.forEach(field => {
           const supported = Field.isSupported(field.schema?.type);
-          table.push([color.blue(field.name), supported, supported ? field.schema?.type : ""]);
+          table.addRow([color.blue(field.name), supported, supported ? field.schema?.type : ""]);
         });
         console.log(table.toString());
       });
@@ -88,11 +87,10 @@ class Field extends Command {
         const jira = new Jira(program);
 
         const table = new Table({
-          chars: jira.tableChars,
           head: ['Name']
         });
 
-        jira.fields.forEach(fieldName => table.push([color.blue(fieldName)]));
+        jira.fields.forEach(fieldName => table.addRow([color.blue(fieldName)]));
         console.log(table.toString());
       });
   }
