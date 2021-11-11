@@ -1,4 +1,3 @@
-import color from 'chalk';
 import inquirer from 'inquirer';
 
 import Command from './command.js';
@@ -47,9 +46,13 @@ class Preset extends Command {
           head: ['Name', 'Query']
         });
 
-        Object.keys(jira.config.presets).forEach(key => table.addRow([color.blue(key),
-          color.green(jira.config.presets[key])
-        ]));
+        Object.keys(jira.config.presets).forEach(key => table.addRow([{
+          color: "blue",
+          text: key
+        }, {
+          color: "green",
+          text: jira.config.presets[key]
+        }, ]));
         console.log(table.toString());
       });
   }

@@ -1,5 +1,3 @@
-import color from 'chalk';
-
 import Command from './command.js';
 import ErrorHandler from './errorhandler.js'
 import Field from './field.js';
@@ -53,10 +51,16 @@ class Issue extends Command {
             'Summary', issue.fields['Summary'].trim()
           ],
           [
-            'URL', color.blue(Issue.url(jira, id))
+            'URL', {
+              color: "blue",
+              text: Issue.url(jira, id)
+            },
           ],
           [
-            'Status', color.green(issue.fields['Status'].name)
+            'Status', {
+              color: "green",
+              text: issue.fields['Status'].name
+            }
           ],
           [
             'Type', issue.fields['Issue Type'].name
@@ -74,13 +78,19 @@ class Issue extends Command {
             'Priority', issue.fields['Priority'].name
           ],
           [
-            'Epic Link', this.showEpicIssue(epicIssue)
+            'Epic Link', {
+              color: "yellow",
+              text: this.showEpicIssue(epicIssue)
+            }
           ],
           [
             'Labels', issue.fields['Labels'].join(', ')
           ],
           [
-            'Sprint', issue.fields['Sprint']?.map(sprint => this.showSprint(sprint)).join(', ')
+            'Sprint', {
+              color: "yellow",
+              text: issue.fields['Sprint']?.map(sprint => this.showSprint(sprint)).join(', ')
+            }
           ]
         ]);
 
@@ -117,7 +127,10 @@ class Issue extends Command {
                 '', ''
               ],
               [
-                'Comment', color.yellow(comment.id)
+                'Comment', {
+                  color: "yellow",
+                  text: comment.id
+                }
               ],
               [
                 'Author', Issue.showUser(comment.author)
@@ -167,17 +180,17 @@ class Issue extends Command {
   static showUser(user) {
     if (!user) return "(null)";
     let str = user.displayName;
-    if (user.emailAddress) str += ` (${color.yellow(user.emailAddress)})`;
+    if (user.emailAddress) str += ` (${user.emailAddress})`;
     return str;
   }
 
   showEpicIssue(issue) {
     if (!issue) return "";
-    return `${color.blue(issue.key)} (${color.yellow(issue.fields['Summary'].trim())})`;
+    return `${issue.key} (${issue.fields['Summary'].trim()})`;
   }
 
   showSprint(sprint) {
-    return `${color.blue(sprint.name)} (${color.yellow(sprint.state)})`;
+    return `${sprint.name} (${sprint.state})`;
   }
 };
 

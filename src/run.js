@@ -1,5 +1,3 @@
-import color from 'chalk';
-
 import Command from './command.js';
 import ErrorHandler from './errorhandler.js';
 import Field from './field.js';

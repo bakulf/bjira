@@ -1,5 +1,3 @@
-import color from 'chalk';
-
 import Command from './command.js';
 import ErrorHandler from './errorhandler.js';
 import Jira from './jira.js';
@@ -28,7 +26,10 @@ class Field extends Command {
 
         resultFields.forEach(field => {
           const supported = Field.isSupported(field.schema?.type);
-          table.addRow([color.blue(field.name), supported, supported ? field.schema?.type : ""]);
+          table.addRow([{
+            color: "blue",
+            text: field.name
+          }, supported, supported ? field.schema?.type : ""]);
         });
         console.log(table.toString());
       });
@@ -90,7 +91,10 @@ class Field extends Command {
           head: ['Name']
         });
 
-        jira.fields.forEach(fieldName => table.addRow([color.blue(fieldName)]));
+        jira.fields.forEach(fieldName => table.addRow([{
+          color: "blue",
+          text: fieldName
+        }]));
         console.log(table.toString());
       });
   }

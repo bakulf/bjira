@@ -1,4 +1,3 @@
-import color from 'chalk';
 import inquirer from 'inquirer';
 
 import Command from './command.js';
@@ -20,7 +19,10 @@ class Project extends Command {
           head: ['Key', 'Name']
         });
 
-        projects.forEach(project => table.addRow([color.blue(project.key), project.name]));
+        projects.forEach(project => table.addRow([{
+          color: "blue",
+          text: project.key
+        }, project.name]));
         console.log(table.toString());
       });
   }

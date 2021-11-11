@@ -1,5 +1,3 @@
-import color from 'chalk';
-
 import Command from './command.js';
 import ErrorHandler from './errorhandler.js';
 import Field from './field.js';
@@ -63,10 +61,19 @@ class Query extends Command {
       head: ['Key', 'Status', 'Type', 'Assignee', 'Summary']
     });
 
-    issues.forEach(issue => table.addRow([color.blue(issue.key),
-      color.green(issue.fields.status.name),
-      color.green(issue.fields.issuetype.name),
-      Issue.showUser(issue.fields.assignee),
+    issues.forEach(issue => table.addRow([{
+        color: "blue",
+        text: issue.key
+      }, {
+        color: "green",
+        text: issue.fields.status.name
+      }, {
+        color: "green",
+        text: issue.fields.issuetype.name
+      }, {
+        color: "yellow",
+        text: Issue.showUser(issue.fields.assignee)
+      },
       issue.fields.summary
     ]))
 

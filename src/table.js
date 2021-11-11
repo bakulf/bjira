@@ -1,7 +1,5 @@
 import color from 'chalk';
 
-const REGEXP_ASCII = /\u001b\[(?:\d*;){0,5}\d*m/g;
-
 class Table {
   constructor(options) {
     this._columns = [];
@@ -17,9 +15,15 @@ class Table {
       this._columns.push(this._createColumn(undefined, this._rows));
     }
 
-    row.forEach((field, pos) => this._columns[pos].rows.push(("" + field).split("\n")));
+    row.forEach((field, pos) => {
+      if (typeof field !== "object") field = {
+        text: field
+      };
+      field.text = ("" + field.text).split("\n");
+      this._columns[pos].rows.push(field);
+    });
 
-    for (let i = row.length; i < this._columns.length; ++i) this._columns[i].rows.push("");
+    for (let i = row.length; i < this._columns.length; ++i) this._columns[i].rows.push({});
 
     ++this._rows;
   }
@@ -50,7 +54,7 @@ class Table {
       const rowHeight = Math.max(...this._columns.map(column => this._computeRowHeight(column, row)));
 
       for (let i = 0; i < rowHeight; ++i) {
-        lines.push(this._columns.map(column => this._toWidth(this._computeLine(column, row, i), column.width)).join(" "));
+        lines.push(this._columns.map(column => this._colorize(column.rows[row], this._toWidth(this._computeLine(column.rows[row], i), column.width))).join(" "));
       }
     }
 
@@ -67,30 +71,30 @@ class Table {
 
   _computeColumnWidth(column) {
     column.width = Math.max(...column.rows.map(row =>
-      Math.max(...row.map(line => line.replace(REGEXP_ASCII, "").length))
+      Math.max(...row.text.map(line => line.length))
     ));
 
     if (column.head) column.width = Math.max(column.width, column.head.length);
   }
 
   _computeRowHeight(column, row) {
-    return column.rows[row].length;
+    return column.rows[row].text.length;
   }
 
   _toWidth(str, width) {
     str = str || "";
 
-    let strLength = str.replace(REGEXP_ASCII, "").length;
+    let strLength = str.length;
     if (strLength > width) {
       return this._truncate(str, width - 1) + "…";
     }
 
-    for (let strLength = str.replace(REGEXP_ASCII, "").length; strLength < width; ++strLength) str += " ";
+    for (let strLength = str.length; strLength < width; ++strLength) str += " ";
     return str;
   }
 
-  _computeLine(column, row, subRow) {
-    return column.rows[row].length < subRow ? "" : column.rows[row][subRow];
+  _computeLine(row, subRow) {
+    return row.text.length < subRow ? "" : row.text[subRow];
   }
 
   _resizeWidthOf(size) {
@@ -101,10 +105,10 @@ class Table {
     this._columns.forEach(column => {
       column.rows.forEach((row, pos) => {
         let lines = [];
-        row.forEach(line => {
+        row.text.forEach(line => {
           lines = lines.concat(this._maybeSplitRow(line, column.width));
         });
-        column.rows[pos] = lines;
+        column.rows[pos].text = lines;
       });
     });
   }
@@ -143,24 +147,15 @@ class Table {
   }
 
   _truncate(str, width) {
-    let out = "";
+    return str.slice(0, width);
+  }
 
-    while (true) {
-      const firstAscii = /\u001b\[((?:\d*;){0,5}\d*)m/g.exec(str);
-      if (!firstAscii) {
-        out += str.slice(0, width);
-        break;
-      }
-
-      let p = str.slice(0, firstAscii.index);
-      p = p.slice(0, width);
-      width -= p.length;
-      out += p + firstAscii[0];
-
-      str = str.slice(firstAscii[0].length + firstAscii.index);
+  _colorize(row, text) {
+    if (!("color" in row)) {
+      return text;
     }
 
-    return out;
+    return color[row.color].apply(null, [text]);
   }
 };
 

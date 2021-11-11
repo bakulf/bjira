@@ -1,5 +1,3 @@
-import color from 'chalk';
-
 import Table from './table.js';
 
 class ErrorHandler {
@@ -8,7 +6,10 @@ class ErrorHandler {
       head: ['Errors']
     });
 
-    e.error.errorMessages.forEach(error => table.addRow([color.blue(error)]));
+    e.error.errorMessages.forEach(error => table.addRow([{
+      color: "blue",
+      text: error
+    }]));
     console.log(table.toString());
   }
 
@@ -17,7 +18,10 @@ class ErrorHandler {
       head: ['Warnings']
     });
 
-    messages.forEach(warning => table.addRow([color.blue(warning)]));
+    messages.forEach(warning => table.addRow([{
+      color: "blue",
+      text: warning
+    }]));
     console.log(table.toString());
   }
 };
