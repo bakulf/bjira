@@ -1,5 +1,4 @@
-import inquirer from 'inquirer';
-
+import Ask from './ask.js';
 import Command from './command.js';
 import Jira from './jira.js';
 import Table from './table.js';
@@ -43,39 +42,16 @@ class Project extends Command {
       return a.name > b.name;
     });
 
-    const projectNames = [];
-    const projectKeys = [];
-    const issueTypes = [];
+    const projectPos = await Ask.askList('Project:', meta.projects.map(project => project.name));
+    const project = meta.projects[projectPos];
 
-    meta.projects.forEach(project => {
-      projectNames.push(project.name);
-      projectKeys.push(project.key);
-      issueTypes.push(project.issuetypes);
-    });
-
-    const projectQuestion = [{
-      type: 'list',
-      name: 'project',
-      message: 'Project:',
-      choices: projectNames,
-      filter: name => {
-        const pos = projectNames.indexOf(name);
-        return {
-          pos,
-          name,
-          key: projectKeys[pos]
-        };
-      }
-    }];
-
-    const projectAnswer = await inquirer.prompt(projectQuestion);
-
-    jira.latestProject = projectAnswer.project.key
+    jira.latestProject = project.key;
     jira.syncConfig();
 
     return {
-      issueTypes: issueTypes[projectAnswer.project.pos],
-      ...projectAnswer.project
+      name: project.name,
+      key: project.key,
+      issueTypes: project.issuetypes,
     };
   }
 };

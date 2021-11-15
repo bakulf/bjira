@@ -1,6 +1,6 @@
 import color from 'chalk';
-import inquirer from 'inquirer';
 
+import Ask from './ask.js';
 import Command from './command.js';
 import Jira from './jira.js';
 import Issue from './issue.js';
@@ -15,30 +15,7 @@ class Create extends Command {
         const jira = new Jira(program);
 
         const project = await Project.pickProject(jira);
-
-        const issueQuestions = [{
-          type: 'list',
-          name: 'issueType',
-          message: 'Issue type:',
-          choices: project.issueTypes,
-          filter: name => project.issueTypes.find(obj => obj.name === name)
-        }, {
-          type: 'input',
-          name: 'summary',
-          message: 'Summary:',
-          default: 'New Issue'
-        }, {
-          type: 'input',
-          name: 'description',
-          message: 'Description:'
-        }, {
-          type: 'confirm',
-          name: 'assign',
-          message: 'Do you want to assign it?'
-        }, ];
-
-        // Ask for the issue name and type
-        const issueAnswers = await inquirer.prompt(issueQuestions);
+        const issueTypePos = await Ask.askList('Issue type:', project.issueTypes.map(issueType => issueType.name));
 
         // Create the issue object
         const newIssue = {
@@ -46,61 +23,32 @@ class Create extends Command {
             project: {
               key: project.key
             },
-            summary: issueAnswers.summary,
+            summary: await Ask.askString('Summary:', 'New Issue'),
             issuetype: {
-              id: issueAnswers.issueType.id
+              id: project.issueTypes[issueTypePos].id
             }
           }
         };
 
-        if (issueAnswers.description) {
-          newIssue.fields.description = issueAnswers.description;
+        const description = await Ask.askString('Description:');
+        if (description) {
+          newIssue.fields.description = description;
         }
 
-        if (issueAnswers.assign) {
+        if (await Ask.askBoolean('Do you want to assign it?')) {
           const userList = await User.pickUser(jira);
-
-          const userNames = [];
-          const userIds = [];
-          userList.forEach(user => {
-            if (user.active) {
-              userNames.push(user.displayName);
-              userIds.push(user.accountId);
-            }
-          });
-
-          const assigneeQuestion = [{
-            type: 'list',
-            name: 'assignee',
-            message: 'Assignee:',
-            choices: userNames,
-            filter: name => {
-              const pos = userNames.indexOf(name);
-              return {
-                pos,
-                name,
-                id: userIds[pos]
-              };
-            }
-          }];
-
-          const assigneeAnswer = await inquirer.prompt(assigneeQuestion);
+          const activeUsers = userList.filter(user => user.active);
+          const assignee = await Ask.askList('Assignee:', activeUsers.map(user => user.displayName));
           newIssue.fields.assignee = {
-            accountId: assigneeAnswer.assignee.id
+            accountId: activeUsers[assignee].accountId,
           };
         }
 
-        if (issueAnswers.issueType.name === 'Task') {
-          const parentIssueQuestion = [{
-            type: 'input',
-            name: 'issueParentName',
-            message: 'Please provide the epic:'
-          }];
-
-          const parentIssueAnswer = await inquirer.prompt(parentIssueQuestion);
-          if (parentIssueAnswer.issueParentName !== '') {
+        if (project.issueTypes[issueTypePos].name === 'Task') {
+          const parentIssue = await Ask.askString('Please provide the epic:');
+          if (parentIssue !== '') {
             newIssue.fields.parent = {
-              key: parentIssueAnswer.issueParentName
+              key: parentIssue
             };
           }
         }

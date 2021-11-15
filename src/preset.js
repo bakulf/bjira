@@ -1,5 +1,3 @@
-import inquirer from 'inquirer';
-
 import Command from './command.js';
 import Jira from './jira.js';
 import Table from './table.js';

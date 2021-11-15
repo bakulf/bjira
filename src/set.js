@@ -1,5 +1,4 @@
-import inquirer from 'inquirer';
-
+import Ask from './ask.js';
 import Command from './command.js';
 import Field from './field.js';
 import Jira from './jira.js';
@@ -17,35 +16,13 @@ class Set extends Command {
         const jira = new Jira(program);
 
         const userList = await User.pickUser(jira);
-        const userNames = [];
-        const userIds = [];
-        userList.forEach(user => {
-          if (user.active) {
-            userNames.push(user.displayName);
-            userIds.push(user.accountId);
-          }
-        });
+        const activeUsers = userList.filter(user => user.active);
+        const assignee = await Ask.askList('Assignee:', activeUsers.map(user => user.displayName));
 
-        const assigneeQuestion = [{
-          type: 'list',
-          name: 'assignee',
-          message: 'Assignee:',
-          choices: userNames,
-          filter: name => {
-            const pos = userNames.indexOf(name);
-            return {
-              pos,
-              name,
-              id: userIds[pos]
-            };
-          }
-        }];
-
-        const assigneeAnswer = await inquirer.prompt(assigneeQuestion);
         const issue = {
           fields: {
             assignee: {
-              accountId: assigneeAnswer.assignee.id
+              accountId: activeUsers[assignee].accountId
             }
           }
         }
@@ -63,36 +40,21 @@ class Set extends Command {
       .action(async id => {
         const jira = new Jira(program);
 
-        const transitionList = await jira.spin('Retrieving transitions...', jira.api.listTransitions(id));
-        const transitionNames = [];
-        const transitionIds = [];
-        transitionList.transitions.forEach(transition => {
-          transitionNames.push(transition.name);
-          transitionIds.push(transition.id);
-        });
+        let transitionList;
+        try {
+          transitionList = await jira.spin('Retrieving transitions...', jira.api.listTransitions(id));
+        } catch (e) {
+          ErrorHandler.showError(jira, e);
+          return;
+        }
 
-        const transitionQuestion = [{
-          type: 'list',
-          name: 'transition',
-          message: 'Status:',
-          choices: transitionNames,
-          filter: name => {
-            const pos = transitionNames.indexOf(name);
-            return {
-              pos,
-              name,
-              id: transitionIds[pos]
-            };
-          }
-        }];
-
-        const transitionAnswer = await inquirer.prompt(transitionQuestion);
-
+        const transitionPos = await Ask.askList('Status:', transitionList.transitions.map(transition => transition.name));
         const transition = {
           transition: {
-            id: transitionAnswer.transition.id
+            id: transitionList.transitions[transitionPos].id
           }
         };
+
         try {
           await jira.spin('Updating the issue...', jira.api.transitionIssue(id, transition));
         } catch (e) {
@@ -107,22 +69,14 @@ class Set extends Command {
       .action(async (fieldName, id) => {
         const jira = new Jira(program);
 
-        const fieldData = await Field.getFieldDataIfSupported(jira, fieldName);
-        if (!fieldData) {
+        const field = await Field.askFieldIfSupported(jira, fieldName);
+        if (!field) {
           console.log("Unsupported field type");
           return;
         }
 
-        const question = [{
-          type: fieldData.type,
-          name: 'value',
-          message: `${fieldName}:`,
-        }];
-
-        const answer = await inquirer.prompt(question);
-
         const data = {};
-        data[fieldData.key] = answer.value;
+        data[field.key] = field.value;
 
         try {
           await jira.spin('Updating the issue...', jira.api.updateIssue(id, {

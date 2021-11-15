@@ -1,5 +1,4 @@
 import execa from 'execa';
-import inquirer from 'inquirer';
 import fs from 'fs';
 import temp from 'temp';
 

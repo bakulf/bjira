@@ -1,3 +1,4 @@
+import Ask from './ask.js';
 import Command from './command.js';
 import ErrorHandler from './errorhandler.js';
 import Jira from './jira.js';
@@ -107,7 +108,7 @@ class Field extends Command {
     return ["string", "number"].includes(fieldType);
   }
 
-  static async getFieldDataIfSupported(jira, fieldName) {
+  static async askFieldIfSupported(jira, fieldName) {
     let resultFields;
     try {
       resultFields = await Field.listFields(jira);
@@ -134,17 +135,16 @@ class Field extends Command {
     let type;
     switch (fieldData.schema.type) {
       case 'number':
-        type = 'number';
-        break;
+        return {
+          value: await Ask.askNumber(`${fieldName}:`), key: fieldData.key
+        };
       case 'string':
-        type = 'input';
-        break;
+        return {
+          value: Ask.askString(`${fieldName}:`), key: fieldData.key
+        };
     }
 
-    return {
-      type,
-      key: fieldData.key
-    };
+    return null;
   }
 };
 

@@ -1,5 +1,4 @@
-import inquirer from 'inquirer';
-
+import Ask from './ask.js';
 import Command from './command.js';
 import Jira from './jira.js';
 import ErrorHandler from './errorhandler.js';
@@ -62,71 +61,23 @@ class Sprint extends Command {
       jira.api.getAllBoards(undefined, undefined, undefined, undefined,
         project.key));
 
-    const boardNames = [];
-    const boardIds = [];
-
-    boardList.values.forEach(board => {
-      boardNames.push(board.name);
-      boardIds.push(board.id);
-    });
-
-    const boardQuestion = [{
-      type: 'list',
-      name: 'board',
-      message: 'Board:',
-      choices: boardNames,
-      filter: name => {
-        const pos = boardNames.indexOf(name);
-        return {
-          pos,
-          name,
-          id: boardIds[pos]
-        };
-      }
-    }];
-
-    const boardAnswer = await inquirer.prompt(boardQuestion);
+    const boardPos = await Ask.askList('Board:', boardList.values.map(board => board.name));
 
     const sprintList = await jira.spin('Retrieving sprints...',
-      jira.api.getAllSprints(boardAnswer.board.id));
+      jira.api.getAllSprints(boardList.values[boardPos].id));
 
-    const sprintNames = [];
-    const sprintIds = [];
+    const sprints = sprintList.values.filter(sprint => sprint.state === 'active' || sprint.state === 'future');
 
-    sprintList.values.forEach(sprint => {
-      if (sprint.state === 'active' || sprint.state === 'future') {
-        sprintNames.push(sprint.name);
-        sprintIds.push(sprint.id);
-      }
-    });
-
-    if (sprintNames.length === 0) {
+    if (sprints.length === 0) {
       return 0;
     }
 
-    let sprintId = sprintIds[0];
-
-    if (sprintNames.length > 1) {
-      const sprintQuestion = [{
-        type: 'list',
-        name: 'sprint',
-        message: 'Board:',
-        choices: sprintNames,
-        filter: name => {
-          const pos = sprintNames.indexOf(name);
-          return {
-            pos,
-            name,
-            id: sprintIds[pos]
-          };
-        }
-      }];
-
-      const sprintAnswer = await inquirer.prompt(sprintQuestion);
-      sprintId = sprintAnswer.sprint.id;
+    if (sprints.length > 1) {
+      const sprintPos = await Ask.askList('Sprint:', sprints.map(sprint => sprint.name));
+      return sprints[sprintPos].id;
     }
 
-    return sprintId;
+    return sprints[0].id;
   }
 };
 
