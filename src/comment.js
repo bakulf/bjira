@@ -4,7 +4,6 @@ import temp from 'temp';
 
 import Command from './command.js';
 import Jira from './jira.js';
-import ErrorHandler from './errorhandler.js';
 
 class Comment extends Command {
   addOptions(program) {
@@ -46,7 +45,7 @@ class Comment extends Command {
 
         const jira = new Jira(program);
 
-        const data = await jira.spin('Adding the comment...', jira.api.addComment(id, comment));
+        await jira.spin('Adding the comment...', jira.api.addComment(id, comment));
       });
   }
 };

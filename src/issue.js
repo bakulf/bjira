@@ -1,5 +1,4 @@
 import Command from './command.js';
-import ErrorHandler from './errorhandler.js'
 import Field from './field.js';
 import Jira from './jira.js';
 import Table from './table.js';
@@ -19,22 +18,9 @@ class Issue extends Command {
       .action(async id => {
         const jira = new Jira(program);
 
-        let resultFields;
-        try {
-          resultFields = await Field.listFields(jira);
-        } catch (e) {
-          ErrorHandler.showError(jira, e);
-          return;
-        }
+        const resultFields = await Field.listFields(jira);
 
-        let result;
-        try {
-          result = await jira.spin('Running query...', jira.api.findIssue(id));
-        } catch (e) {
-          ErrorHandler.showError(jira, e);
-          return;
-        }
-
+        const result = await jira.spin('Running query...', jira.api.findIssue(id));
         const issue = Issue.replaceFields(result, resultFields);
 
         let epicIssue = null;

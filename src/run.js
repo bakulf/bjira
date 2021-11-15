@@ -39,29 +39,17 @@ class Run extends Command {
           return;
         }
 
-        let resultFields;
-        try {
-          resultFields = await Field.listFields(jira);
-        } catch (e) {
-          ErrorHandler.showError(jira, e);
-          return;
-        }
+        const resultFields = await Field.listFields(jira);
 
         let expectedResult = opts.limit;
         let issues = [];
 
         while (issues.length < opts.limit) {
-          let result;
-          try {
-            result = await jira.spin('Running query...',
-              jira.api.searchJira(query, {
-                startAt: issues.lengh,
-                maxResults: opts.limit - issues.length
-              }));
-          } catch (e) {
-            ErrorHandler.showError(jira, e);
-            return;
-          }
+          const result = await jira.spin('Running query...',
+            jira.api.searchJira(query, {
+              startAt: issues.lengh,
+              maxResults: opts.limit - issues.length
+            }));
 
           if (result.warningMessages) {
             ErrorHandler.showWarningMessages(result.warningMessages);

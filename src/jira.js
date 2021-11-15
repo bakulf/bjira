@@ -2,6 +2,8 @@ import jiraClient from 'jira-client';
 import fs from 'fs';
 import ora from 'ora';
 
+import ErrorHandler from './errorhandler.js'
+
 class Jira {
   constructor(program) {
     const opts = program.opts();
@@ -74,11 +76,12 @@ class Jira {
 
     try {
       const result = await promise;
+      spinner.stop();
       return result;
     } catch (e) {
-      throw e;
-    } finally {
       spinner.stop();
+      ErrorHandler.showError(this, e);
+      process.exit(1);
     }
   }
 

@@ -1,6 +1,5 @@
 import Ask from './ask.js';
 import Command from './command.js';
-import ErrorHandler from './errorhandler.js';
 import Jira from './jira.js';
 import Table from './table.js';
 
@@ -13,13 +12,7 @@ class Field extends Command {
       .action(async () => {
         const jira = new Jira(program);
 
-        let resultFields;
-        try {
-          resultFields = await Field.listFields(jira);
-        } catch (e) {
-          ErrorHandler.showError(jira, e);
-          return;
-        }
+        const resultFields = await Field.listFields(jira);
 
         const table = new Table({
           head: ['Name', 'Supported', 'Type']
@@ -41,13 +34,7 @@ class Field extends Command {
       .action(async fieldName => {
         const jira = new Jira(program);
 
-        let resultFields;
-        try {
-          resultFields = await Field.listFields(jira);
-        } catch (e) {
-          ErrorHandler.showError(jira, e);
-          return;
-        }
+        const resultFields = await Field.listFields(jira);
 
         const fieldData = resultFields.find(field => field.name === fieldName);
         if (!fieldData) {
@@ -109,13 +96,7 @@ class Field extends Command {
   }
 
   static async askFieldIfSupported(jira, fieldName) {
-    let resultFields;
-    try {
-      resultFields = await Field.listFields(jira);
-    } catch (e) {
-      ErrorHandler.showError(jira, e);
-      return null;
-    }
+    const resultFields = await Field.listFields(jira);
 
     let fieldData;
     resultFields.forEach(field => {

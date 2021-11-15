@@ -1,7 +1,6 @@
 import Ask from './ask.js';
 import Command from './command.js';
 import Jira from './jira.js';
-import ErrorHandler from './errorhandler.js';
 import Project from './project.js';
 
 class Sprint extends Command {
@@ -20,18 +19,14 @@ class Sprint extends Command {
           return;
         }
 
-        try {
-          await jira.spin('Adding the issue to the sprint...',
-            jira.apiAgileRequest(`/sprint/${sprintId}/issue`, {
-              method: 'POST',
-              followAllRedirects: true,
-              body: {
-                issues: [id]
-              }
-            }));
-        } catch (e) {
-          ErrorHandler.showError(jira, e);
-        }
+        await jira.spin('Adding the issue to the sprint...',
+          jira.apiAgileRequest(`/sprint/${sprintId}/issue`, {
+            method: 'POST',
+            followAllRedirects: true,
+            body: {
+              issues: [id]
+            }
+          }));
       });
 
     sprintCmd.command('remove')
@@ -40,18 +35,14 @@ class Sprint extends Command {
       .action(async id => {
         const jira = new Jira(program);
 
-        try {
-          await jira.spin('Adding the issue to the sprint...',
-            jira.apiAgileRequest("/backlog/issue", {
-              method: 'POST',
-              followAllRedirects: true,
-              body: {
-                issues: [id]
-              }
-            }));
-        } catch (e) {
-          ErrorHandler.showError(jira, e);
-        }
+        await jira.spin('Adding the issue to the sprint...',
+          jira.apiAgileRequest("/backlog/issue", {
+            method: 'POST',
+            followAllRedirects: true,
+            body: {
+              issues: [id]
+            }
+          }));
       });
   }
 

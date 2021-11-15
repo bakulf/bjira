@@ -2,7 +2,6 @@ import Ask from './ask.js';
 import Command from './command.js';
 import Field from './field.js';
 import Jira from './jira.js';
-import ErrorHandler from './errorhandler.js';
 import User from './user.js';
 
 class Set extends Command {
@@ -27,11 +26,7 @@ class Set extends Command {
           }
         }
 
-        try {
-          await jira.spin('Updating the issue...', jira.api.updateIssue(id, issue));
-        } catch (e) {
-          ErrorHandler.showError(jira, e);
-        }
+        await jira.spin('Updating the issue...', jira.api.updateIssue(id, issue));
       });
 
     setCmd.command('status')
@@ -40,14 +35,7 @@ class Set extends Command {
       .action(async id => {
         const jira = new Jira(program);
 
-        let transitionList;
-        try {
-          transitionList = await jira.spin('Retrieving transitions...', jira.api.listTransitions(id));
-        } catch (e) {
-          ErrorHandler.showError(jira, e);
-          return;
-        }
-
+        const transitionList = await jira.spin('Retrieving transitions...', jira.api.listTransitions(id));
         const transitionPos = await Ask.askList('Status:', transitionList.transitions.map(transition => transition.name));
         const transition = {
           transition: {
@@ -55,11 +43,7 @@ class Set extends Command {
           }
         };
 
-        try {
-          await jira.spin('Updating the issue...', jira.api.transitionIssue(id, transition));
-        } catch (e) {
-          ErrorHandler.showError(jira, e);
-        }
+        await jira.spin('Updating the issue...', jira.api.transitionIssue(id, transition));
       });
 
     setCmd.command('custom')
@@ -78,15 +62,11 @@ class Set extends Command {
         const data = {};
         data[field.key] = field.value;
 
-        try {
-          await jira.spin('Updating the issue...', jira.api.updateIssue(id, {
-            fields: {
-              ...data
-            }
-          }));
-        } catch (e) {
-          ErrorHandler.showError(jira, e);
-        }
+        await jira.spin('Updating the issue...', jira.api.updateIssue(id, {
+          fields: {
+            ...data
+          }
+        }));
       });
   }
 };
