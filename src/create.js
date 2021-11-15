@@ -5,6 +5,7 @@ import Command from './command.js';
 import Jira from './jira.js';
 import Issue from './issue.js';
 import Project from './project.js';
+import Set from './set.js';
 import User from './user.js';
 
 class Create extends Command {
@@ -35,15 +36,6 @@ class Create extends Command {
           newIssue.fields.description = description;
         }
 
-        if (await Ask.askBoolean('Do you want to assign it?')) {
-          const userList = await User.pickUser(jira);
-          const activeUsers = userList.filter(user => user.active);
-          const assignee = await Ask.askList('Assignee:', activeUsers.map(user => user.displayName));
-          newIssue.fields.assignee = {
-            accountId: activeUsers[assignee].accountId,
-          };
-        }
-
         if (project.issueTypes[issueTypePos].name === 'Task') {
           const parentIssue = await Ask.askString('Please provide the epic:');
           if (parentIssue !== '') {
@@ -53,19 +45,27 @@ class Create extends Command {
           }
         }
 
-        jira.fields.forEach(fieldName => {
-          const fieldValue = Field.askFieldIfSupported(jira, fieldName);
-          if (fieldValue && fieldValue.value) {
-            newIssue.fields[fieldValue.key] = fieldValue.value;
-          }
-        });
-
         const issue = await jira.spin('Creating the issue...', jira.api.addNewIssue(newIssue));
 
         console.log('');
         console.log('New issue: ' + color.bold.red(issue.key));
         console.log(color.blue(Issue.url(jira, issue.key)));
         console.log('');
+
+        if (await Ask.askBoolean('Do you want to assign it?')) {
+          await Set.assignIssue(jira, issue.key);
+        }
+
+        if (jira.fields && jira.fields.length > 0 &&
+          await Ask.askBoolean('Do you want to set custom fields?')) {
+          for (let fealdName of jira.fields) {
+            await Set.setCustomField(jira, filedName, issue.key);
+          }
+        }
+
+        if (await Ask.askBoolean('Do you want to set a status?')) {
+          await Set.setStatus(jira, issue.key);
+        }
       });
   }
 };
