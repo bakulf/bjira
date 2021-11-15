@@ -53,6 +53,13 @@ class Create extends Command {
           }
         }
 
+        jira.fields.forEach(fieldName => {
+          const fieldValue = Field.askFieldIfSupported(jira, fieldName);
+          if (fieldValue && fieldValue.value) {
+            newIssue.fields[fieldValue.key] = fieldValue.value;
+          }
+        });
+
         const issue = await jira.spin('Creating the issue...', jira.api.addNewIssue(newIssue));
 
         console.log('');
