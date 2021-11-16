@@ -11,6 +11,7 @@ class Run extends Command {
     const cmd = program.command('run')
       .description('Run a preset')
       .argument('<name>', 'The preset name')
+      .option('-q, --query <query...>')
       .option('-l, --limit <limit>',
         `Set the query limit. Default ${DEFAULT_QUERY_LIMIT}`,
         DEFAULT_QUERY_LIMIT)
@@ -24,8 +25,7 @@ class Run extends Command {
         }
 
         let query = jira.config.presets[name];
-        for (let i = 2; i < program.args.length; ++i) {
-          const arg = program.args[i];
+        for (let arg of (opts.query || [])) {
           if (!query.includes("$$$")) {
             console.log("Too many aguments for this query");
             return;

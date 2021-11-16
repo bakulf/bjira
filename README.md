@@ -52,7 +52,7 @@ bjira run mine
 If you want to have parameters in your query, use `$$$` as placeholder. For instance:
 ```
 bjira preset create search 'project = "FOO" AND text ~ "$$$" ORDER BY created DESC'
-bjira run search "hello world"
+bjira run search -q "hello world"
 ```
 
 
