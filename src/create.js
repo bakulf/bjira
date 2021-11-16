@@ -6,6 +6,7 @@ import Jira from './jira.js';
 import Issue from './issue.js';
 import Project from './project.js';
 import Set from './set.js';
+import Sprint from './sprint.js';
 import User from './user.js';
 
 class Create extends Command {
@@ -56,15 +57,19 @@ class Create extends Command {
           await Set.assignIssue(jira, issue.key);
         }
 
+        if (await Ask.askBoolean('Do you want to set a status?')) {
+          await Set.setStatus(jira, issue.key);
+        }
+
         if (jira.fields && jira.fields.length > 0 &&
           await Ask.askBoolean('Do you want to set custom fields?')) {
-          for (let fealdName of jira.fields) {
-            await Set.setCustomField(jira, filedName, issue.key);
+          for (let fieldName of jira.fields) {
+            await Set.setCustomField(jira, fieldName, issue.key);
           }
         }
 
-        if (await Ask.askBoolean('Do you want to set a status?')) {
-          await Set.setStatus(jira, issue.key);
+        if (await Ask.askBoolean('Do you want to add it to the current sprint?')) {
+          await Sprint.add(jira, issue.key);
         }
       });
   }

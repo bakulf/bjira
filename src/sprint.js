@@ -12,21 +12,7 @@ class Sprint extends Command {
       .argument('<id>', 'The issue ID')
       .action(async id => {
         const jira = new Jira(program);
-
-        const sprintId = await Sprint.pickSprint(jira);
-        if (sprintId === 0) {
-          console.log("No active sprints");
-          return;
-        }
-
-        await jira.spin('Adding the issue to the sprint...',
-          jira.apiAgileRequest(`/sprint/${sprintId}/issue`, {
-            method: 'POST',
-            followAllRedirects: true,
-            body: {
-              issues: [id]
-            }
-          }));
+        await Sprint.add(jira, id);
       });
 
     sprintCmd.command('remove')
@@ -69,6 +55,23 @@ class Sprint extends Command {
     }
 
     return sprints[0].id;
+  }
+
+  static async add(jira, id) {
+    const sprintId = await Sprint.pickSprint(jira);
+    if (sprintId === 0) {
+      console.log("No active sprints");
+      return;
+    }
+
+    await jira.spin('Adding the issue to the sprint...',
+      jira.apiAgileRequest(`/sprint/${sprintId}/issue`, {
+        method: 'POST',
+        followAllRedirects: true,
+        body: {
+          issues: [id]
+        }
+      }));
   }
 };
 
