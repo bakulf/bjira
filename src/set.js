@@ -16,6 +16,23 @@ class Set extends Command {
         await Set.assignIssue(jira, id);
       });
 
+    setCmd.command('unassign')
+      .description('Unassign the issue')
+      .argument('<id>', 'The issue ID')
+      .action(async id => {
+        const jira = new Jira(program);
+
+        const issue = {
+          fields: {
+            assignee: {
+              accountId: null
+            }
+          }
+        }
+
+        await jira.spin('Updating the issue...', jira.api.updateIssue(id, issue));
+      });
+
     setCmd.command('status')
       .description('Change the status')
       .argument('<id>', 'The issue ID')
