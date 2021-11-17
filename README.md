@@ -69,4 +69,4 @@ If you want to see some of them in the issue report, add them:
 bjira field add "Story Points"
 ```
 
-Any custom fields added to the list will be shown in the issue report (See `bjira issue`).
+Any custom fields added to the list will be shown in the issue report (See `bjira show`).

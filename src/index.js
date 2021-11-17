@@ -1,5 +1,9 @@
 #!/usr/bin/env node
 
+// SPDX-FileCopyrightText: 2021 Andrea Marchesini <baku@bnode.dev>
+//
+// SPDX-License-Identifier: MIT
+
 import program from 'commander';
 import fs from 'fs';
 import os from 'os';

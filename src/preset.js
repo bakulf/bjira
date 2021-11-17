@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2021 Andrea Marchesini <baku@bnode.dev>
+//
+// SPDX-License-Identifier: MIT
+
 import Command from './command.js';
 import Jira from './jira.js';
 import Table from './table.js';

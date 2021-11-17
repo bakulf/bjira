@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2021 Andrea Marchesini <baku@bnode.dev>
+//
+// SPDX-License-Identifier: MIT
+
 import jiraClient from 'jira-client';
 import fs from 'fs';
 import ora from 'ora';
