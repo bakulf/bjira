@@ -2,12 +2,9 @@
 //
 // SPDX-License-Identifier: MIT
 
-import execa from 'execa';
-import fs from 'fs';
-import temp from 'temp';
-
 import Command from './command.js';
 import Jira from './jira.js';
+import Utils from './utils.js';
 
 class Comment extends Command {
   addOptions(program) {
@@ -15,33 +12,11 @@ class Comment extends Command {
       .description('Add a comment to an issue')
       .argument('<id>', 'The issue ID')
       .action(async id => {
-        temp.track();
-
-        let file;
-        try {
-          file = temp.openSync('jira');
-        } catch (e) {
-          console.log("Failed to open a temporary file");
+        const comment = await Utils.writeInTempFile();
+        if (!comment === null) {
           return;
         }
 
-        const code = await new Promise(resolve => {
-          const subprocess = execa(process.env.EDITOR, [file.path], {
-            detached: true,
-            stdio: 'inherit',
-          });
-
-          subprocess.on('error', () => resolve(-1));
-          subprocess.on('close', resolve);
-        });
-
-        if (code !== 0) {
-          console.log("Failed to run the app");
-          return;
-        }
-
-        let comment = fs.readFileSync(file.path);
-        comment = comment.toString().trim();
         if (comment === "") {
           console.log("No comment message");
           return;

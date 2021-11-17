@@ -12,6 +12,7 @@ import Project from './project.js';
 import Set from './set.js';
 import Sprint from './sprint.js';
 import User from './user.js';
+import Utils from './utils.js';
 
 class Create extends Command {
   addOptions(program) {
@@ -36,9 +37,11 @@ class Create extends Command {
           }
         };
 
-        const description = await Ask.askString('Description:');
-        if (description) {
-          newIssue.fields.description = description;
+        if (await Ask.askBoolean('Do you want to write a description?')) {
+          const description = await Utils.writeInTempFile();
+          if (description) {
+            newIssue.fields.description = description;
+          }
         }
 
         if (project.issueTypes[issueTypePos].name === 'Task') {
