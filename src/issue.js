@@ -11,7 +11,7 @@ class Issue extends Command {
   }
 
   addOptions(program) {
-    const cmd = program.command('issue')
+    const cmd = program.command('show')
       .description('Show an issue')
       .option('-C, --comments')
       .argument('<id>', 'The issue ID')
