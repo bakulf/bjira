@@ -44,7 +44,7 @@ class Create extends Command {
           }
         }
 
-        if (project.issueTypes[issueTypePos].name === 'Task') {
+        if (project.issueTypes[issueTypePos].name !== 'Epic') {
           const parentIssue = await Ask.askString('Please provide the epic:');
           if (parentIssue !== '') {
             newIssue.fields.parent = {

@@ -125,7 +125,7 @@ class Field extends Command {
         };
       case 'string':
         return {
-          value: Ask.askString(`${fieldName}:`), key: fieldData.key
+          value: await Ask.askString(`${fieldName}:`), key: fieldData.key
         };
     }
 
