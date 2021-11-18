@@ -10,6 +10,11 @@ class Utils {
   static async writeInTempFile() {
     temp.track();
 
+    if (!process.env.EDITOR) {
+      console.log("Please set 'EDITOR' env variable.");
+      return null;
+    }
+
     let file;
     try {
       file = temp.openSync('jira');
