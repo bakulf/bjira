@@ -43,7 +43,15 @@ class Project extends Command {
         return 1;
       }
 
-      return a.name > b.name;
+      if (a.name < b.name) {
+        return -1;
+      }
+
+      if (a.name > b.name) {
+        return 1;
+      }
+
+      return 0;
     });
 
     const projectPos = await Ask.askList('Project:', meta.projects.map(project => project.name));
