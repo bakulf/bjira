@@ -3,6 +3,10 @@
 // SPDX-License-Identifier: MIT
 
 import inquirer from 'inquirer';
+import inquirerAutocompletePrompt from 'inquirer-autocomplete-prompt';
+import fuzzy from 'fuzzy';
+
+inquirer.registerPrompt('autocomplete', inquirerAutocompletePrompt);
 
 class Ask {
   static async askString(message, defaultValue = undefined) {
@@ -48,10 +52,10 @@ class Ask {
 
   static async askList(message, list) {
     const answer = await inquirer.prompt([{
-      type: 'list',
+      type: 'autocomplete',
       name: 'value',
       message,
-      choices: list,
+      source: (answers, input) => fuzzy.filter(input || '', list).map(el => el.original),
       filter: name => list.indexOf(name),
     }]);
     return answer.value;
