@@ -10,10 +10,23 @@ class ErrorHandler {
       head: ['Errors']
     });
 
-    e.error.errorMessages.forEach(error => table.addRow([{
-      color: "blue",
-      text: error
-    }]));
+    if (typeof e.error === "string") {
+      table.addRow([{
+        color: "blue",
+        text: e.error
+      }]);
+    } else if ("errorMessages" in e.error) {
+      e.error.errorMessages.forEach(error => table.addRow([{
+        color: "blue",
+        text: error
+      }]));
+    } else {
+      table.addRow([{
+        color: "blue",
+        text: e.error
+      }]);
+    }
+
     console.log(table.toString());
   }
 
