@@ -24,25 +24,7 @@ class Query extends Command {
         const opts = cmd.opts();
 
         const resultFields = await Field.listFields(jira);
-
-        let expectedResult = opts.limit;
-        let issues = [];
-
-        while (issues.length < opts.limit) {
-          const result = await jira.spin('Running query...',
-            jira.api.searchJira(query, {
-              startAt: issues.lengh,
-              maxResults: opts.limit - issues.length
-            }));
-
-          if (result.warningMessages) {
-            ErrorHandler.showWarningMessages(result.warningMessages);
-            return;
-          }
-
-          issues = issues.concat(result.issues);
-          if (issues.length >= result.total) break;
-        }
+        const issues = await Query.runQuery(jira, query, opts.limit);
 
         Query.showIssues(jira, issues, resultFields);
       });
@@ -70,6 +52,26 @@ class Query extends Command {
     ]))
 
     console.log(table.toString());
+  }
+
+  static async runQuery(jira, query, expectedResult) {
+    let issues = [];
+    while (issues.length < (expectedResult === undefined ? issues.length + 1 : expectedResult)) {
+      const result = await jira.spin('Running query...',
+        jira.api.searchJira(query, {
+          startAt: issues.lengh,
+          maxResults: expectedResult - issues.length
+        }));
+
+      if (result.warningMessages) {
+        ErrorHandler.showWarningMessages(result.warningMessages);
+        return;
+      }
+
+      issues = issues.concat(result.issues);
+      if (issues.length >= result.total) break;
+    }
+    return issues;
   }
 };
 

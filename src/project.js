@@ -50,18 +50,23 @@ class Project extends Command {
     if (jira.latestProject) {
       const latestProject = meta.projects.find(project => project.key === jira.latestProject);
       if (latestProject) {
-        projects.push(`Latest: ${latestProject.name}`);
+        projects.push({
+          name: `Latest: ${latestProject.name}`,
+          value: latestProject.key
+        });
       }
     }
 
-    meta.projects.forEach(project => projects.push(project.name));
+    meta.projects.forEach(project => projects.push({
+      name: project.name,
+      value: project.key
+    }));
 
-    const projectPos = await Ask.askList('Project:', projects);
-    const project = meta.projects[projectPos];
-
-    jira.latestProject = project.key;
+    const projectKey = await Ask.askList('Project:', projects);
+    jira.latestProject = projectKey;
     jira.syncConfig();
 
+    const project = meta.projects.find(project => project.key === projectKey);
     return {
       name: project.name,
       key: project.key,

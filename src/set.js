@@ -58,12 +58,16 @@ class Set extends Command {
   static async assignIssue(jira, id) {
     const userList = await User.pickUser(jira);
     const activeUsers = userList.filter(user => user.active);
-    const assignee = await Ask.askList('Assignee:', activeUsers.map(user => user.displayName));
+    const assigneeId = await Ask.askList('Assignee:',
+      activeUsers.map(user => ({
+        name: user.displayName,
+        value: user.accountId
+      })));
 
     const issue = {
       fields: {
         assignee: {
-          accountId: activeUsers[assignee].accountId
+          accountId: assigneeId
         }
       }
     }
@@ -90,10 +94,14 @@ class Set extends Command {
 
   static async setStatus(jira, id) {
     const transitionList = await jira.spin('Retrieving transitions...', jira.api.listTransitions(id));
-    const transitionPos = await Ask.askList('Status:', transitionList.transitions.map(transition => transition.name));
+    const transitionId = await Ask.askList('Status:',
+      transitionList.transitions.map(transition => ({
+        name: transition.name,
+        value: transition.id
+      })));
     const transition = {
       transition: {
-        id: transitionList.transitions[transitionPos].id
+        id: transitionId
       }
     };
 

@@ -6,9 +6,11 @@ import color from 'chalk';
 
 import Ask from './ask.js';
 import Command from './command.js';
+import Field from './field.js';
 import Jira from './jira.js';
 import Issue from './issue.js';
 import Project from './project.js';
+import Query from './query.js';
 import Set from './set.js';
 import Sprint from './sprint.js';
 import User from './user.js';
@@ -22,7 +24,14 @@ class Create extends Command {
         const jira = new Jira(program);
 
         const project = await Project.pickProject(jira);
-        const issueTypePos = await Ask.askList('Issue type:', project.issueTypes.map(issueType => issueType.name));
+        const issueType = await Ask.askList('Issue type:',
+          project.issueTypes.map(issueType => ({
+            name: issueType.name,
+            value: {
+              name: issueType.name,
+              id: issueType.id
+            }
+          })));
 
         // Create the issue object
         const newIssue = {
@@ -32,7 +41,7 @@ class Create extends Command {
             },
             summary: await Ask.askString('Summary:', 'New Issue'),
             issuetype: {
-              id: project.issueTypes[issueTypePos].id
+              id: issueType.id
             }
           }
         };
@@ -44,11 +53,22 @@ class Create extends Command {
           }
         }
 
-        if (project.issueTypes[issueTypePos].name !== 'Epic') {
-          const parentIssue = await Ask.askString('Please provide the epic:');
-          if (parentIssue !== '') {
+        if (issueType.name !== 'Epic' &&
+          await Ask.askBoolean('Do you want to set a parent epic?')) {
+          const epics = await Query.runQuery(jira, `project = "${project.key}" and type = "epic"`);
+          if (!epics || epics.length === 0) {
+            console.log("No epics yet.");
+          } else {
+            const resultFields = await Field.listFields(jira);
+            epics.forEach(epic => Issue.replaceFields(epic, resultFields));
+
+            const parentKey = await Ask.askList('Choose the epic:',
+              epics.map(epic => ({
+                name: `${epic.key} - ${epic.fields['Summary']}`,
+                value: epic.key
+              })));
             newIssue.fields.parent = {
-              key: parentIssue
+              key: parentKey
             };
           }
         }

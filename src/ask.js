@@ -55,8 +55,9 @@ class Ask {
       type: 'autocomplete',
       name: 'value',
       message,
-      source: (answers, input) => fuzzy.filter(input || '', list).map(el => el.original),
-      filter: choice => list.indexOf(choice),
+      source: (answers, input) => fuzzy.filter(input || '', list, {
+        extract: el => el.name
+      }).map(el => el.original),
     }]);
     return answer.value;
   }

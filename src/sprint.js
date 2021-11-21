@@ -139,10 +139,14 @@ class Sprint extends Command {
       jira.api.getAllBoards(undefined, undefined, undefined, undefined,
         project.key));
 
-    const boardPos = await Ask.askList('Board:', boardList.values.map(board => board.name));
+    const boardId = await Ask.askList('Board:',
+      boardList.values.map(board => ({
+        name: board.name,
+        value: board.id
+      })));
 
     const sprintList = await jira.spin('Retrieving sprints...',
-      jira.api.getAllSprints(boardList.values[boardPos].id));
+      jira.api.getAllSprints(boardId));
 
     const sprints = sprintList.values.filter(sprint => sprint.state === 'active' || sprint.state === 'future');
 
@@ -151,15 +155,19 @@ class Sprint extends Command {
     }
 
     if (sprints.length > 1) {
-      const sprintPos = await Ask.askList('Sprint:', sprints.map(sprint => sprint.name));
+      const sprintId = await Ask.askList('Sprint:',
+        sprints.map(sprint => ({
+          name: sprint.name,
+          value: sprint.id
+        })));
       return {
-        boardId: boardList.values[boardPos].id,
-        sprintId: sprints[sprintPos].id
+        boardId,
+        sprintId,
       };
     }
 
     return {
-      boardId: boardList.values[boardPos].id,
+      boardId,
       sprintId: sprints[0].id
     };
   }
