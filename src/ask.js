@@ -56,7 +56,7 @@ class Ask {
       name: 'value',
       message,
       source: (answers, input) => fuzzy.filter(input || '', list).map(el => el.original),
-      filter: name => list.indexOf(name),
+      filter: choice => list.indexOf(choice),
     }]);
     return answer.value;
   }

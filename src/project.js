@@ -35,14 +35,6 @@ class Project extends Command {
       jira.apiRequest('/issue/createmeta'));
 
     meta.projects.sort((a, b) => {
-      if (a.key === jira.latestProject) {
-        return -1;
-      }
-
-      if (b.key === jira.latestProject) {
-        return 1;
-      }
-
       if (a.name < b.name) {
         return -1;
       }
@@ -54,7 +46,17 @@ class Project extends Command {
       return 0;
     });
 
-    const projectPos = await Ask.askList('Project:', meta.projects.map(project => project.name));
+    const projects = [];
+    if (jira.latestProject) {
+      const latestProject = meta.projects.find(project => project.key === jira.latestProject);
+      if (latestProject) {
+        projects.push(`Latest: ${latestProject.name}`);
+      }
+    }
+
+    meta.projects.forEach(project => projects.push(project.name));
+
+    const projectPos = await Ask.askList('Project:', projects);
     const project = meta.projects[projectPos];
 
     jira.latestProject = project.key;
