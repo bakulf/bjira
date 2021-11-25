@@ -41,8 +41,9 @@ class Sprint extends Command {
           }));
       });
 
-    sprintCmd.command('show')
+    const showCmd = sprintCmd.command('show')
       .description('Show the sprint')
+      .option('-a, --all', 'Show all the users')
       .action(async () => {
         const jira = new Jira(program);
         const data = await Sprint.pickSprint(jira);
@@ -55,7 +56,8 @@ class Sprint extends Command {
 
         let issues = [];
         while (true) {
-          const results = await jira.spin('Retrieving issues...', jira.api.getBoardIssuesForSprint(data.boardId, data.sprintId, issues.length));
+          const results = await jira.spin('Retrieving issues...',
+            jira.api.getBoardIssuesForSprint(data.boardId, data.sprintId, issues.length));
           issues = issues.concat(results.issues);
           if (issues.length >= results.total) break;
         }
@@ -102,7 +104,16 @@ class Sprint extends Command {
         const currentUser = await jira.spin('Retrieving current user...', jira.api.getCurrentUser());
         const transitionList = await jira.spin('Retrieving transitions...', jira.api.listTransitions(issues[0].id));
 
-        User.sortUsers(currentUser, users).forEach(user => {
+        console.log('\n' + color.blue(data.sprintName) + '\n');
+
+        let filteredUsers;
+        if (showCmd.opts().all) {
+          filteredUsers = User.sortUsers(currentUser, users);
+        } else {
+          filteredUsers = [users.find(user => user.accountId === currentUser.accountId)];
+        }
+
+        filteredUsers.forEach(user => {
           console.log(color.yellow(Issue.showUser(user.user)));
 
           const maxIssues = Math.max(...user.statuses.map(status => status.issues.length));
@@ -155,20 +166,25 @@ class Sprint extends Command {
     }
 
     if (sprints.length > 1) {
-      const sprintId = await Ask.askList('Sprint:',
+      const sprintData = await Ask.askList('Sprint:',
         sprints.map(sprint => ({
           name: sprint.name,
-          value: sprint.id
+          value: {
+            id: sprint.id,
+            name: sprint.name
+          }
         })));
       return {
         boardId,
-        sprintId,
+        sprintId: sprintData.id,
+        sprintName: sprintData.name,
       };
     }
 
     return {
       boardId,
-      sprintId: sprints[0].id
+      sprintId: sprints[0].id,
+      sprintName: sprints[0].name,
     };
   }
 

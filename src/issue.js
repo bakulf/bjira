@@ -17,7 +17,7 @@ class Issue extends Command {
   addOptions(program) {
     const cmd = program.command('show')
       .description('Show an issue')
-      .option('-C, --comments')
+      .option('-C, --comments', 'Show the comments too')
       .argument('<id>', 'The issue ID')
       .action(async id => {
         const jira = new Jira(program);

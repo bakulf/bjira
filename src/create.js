@@ -33,7 +33,6 @@ class Create extends Command {
             }
           })));
 
-        // Create the issue object
         const newIssue = {
           fields: {
             project: {
