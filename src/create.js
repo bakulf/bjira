@@ -54,15 +54,15 @@ class Create extends Command {
 
         if (issueType.name !== 'Epic' &&
           await Ask.askBoolean('Do you want to set a parent epic?')) {
-          const epics = await Query.runQuery(jira, `project = "${project.key}" and type = "epic"`);
-          if (!epics || epics.length === 0) {
+          const result = await Query.runQuery(jira, `project = "${project.key}" and type = "epic"`, 999999);
+          if (!result.issues || result.issues.length === 0) {
             console.log("No epics yet.");
           } else {
             const resultFields = await Field.listFields(jira);
-            epics.forEach(epic => Issue.replaceFields(epic, resultFields));
+            result.issues.forEach(epic => Issue.replaceFields(epic, resultFields));
 
             const parentKey = await Ask.askList('Choose the epic:',
-              epics.map(epic => ({
+              result.issues.map(epic => ({
                 name: `${epic.key} - ${epic.fields['Summary']}`,
                 value: epic.key
               })));

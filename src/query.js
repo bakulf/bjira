@@ -9,6 +9,8 @@ import Issue from './issue.js';
 import Jira from './jira.js';
 import Table from './table.js';
 
+import color from 'chalk';
+
 const DEFAULT_QUERY_LIMIT = 20;
 
 class Query extends Command {
@@ -24,13 +26,15 @@ class Query extends Command {
         const opts = cmd.opts();
 
         const resultFields = await Field.listFields(jira);
-        const issues = await Query.runQuery(jira, query, opts.limit);
+        const result = await Query.runQuery(jira, query, opts.limit);
 
-        Query.showIssues(jira, issues, resultFields);
+        Query.showIssues(jira, result.issues, result.total, resultFields);
       });
   }
 
-  static showIssues(jira, issues, fields) {
+  static showIssues(jira, issues, total, fields) {
+    console.log(`Showing ${color.bold(issues.length)} issues of ${color.bold(total)}`);
+
     const table = new Table({
       head: ['Key', 'Status', 'Type', 'Assignee', 'Summary']
     });
@@ -56,6 +60,7 @@ class Query extends Command {
 
   static async runQuery(jira, query, expectedResult) {
     let issues = [];
+    let total = 0;
     while (issues.length < (expectedResult === undefined ? issues.length + 1 : expectedResult)) {
       const result = await jira.spin('Running query...',
         jira.api.searchJira(query, {
@@ -68,10 +73,16 @@ class Query extends Command {
         return;
       }
 
+      total = result.total;
       issues = issues.concat(result.issues);
-      if (issues.length >= result.total) break;
+
+      if (issues.length >= total) break;
     }
-    return issues;
+
+    return {
+      total,
+      issues
+    };
   }
 };
 

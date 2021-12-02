@@ -44,9 +44,9 @@ class Run extends Command {
         }
 
         const resultFields = await Field.listFields(jira);
-        const issues = await Query.runQuery(jira, query, opts.limit);
+        const result = await Query.runQuery(jira, query, opts.limit);
 
-        Query.showIssues(jira, issues, resultFields);
+        Query.showIssues(jira, result.issues, result.total, resultFields);
       });
   }
 
