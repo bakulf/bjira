@@ -64,7 +64,7 @@ class Query extends Command {
     while (issues.length < (expectedResult === undefined ? issues.length + 1 : expectedResult)) {
       const result = await jira.spin('Running query...',
         jira.api.searchJira(query, {
-          startAt: issues.lengh,
+          startAt: issues.length,
           maxResults: expectedResult - issues.length
         }));
 
