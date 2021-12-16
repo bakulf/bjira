@@ -5,6 +5,7 @@
 import Command from './command.js';
 import Field from './field.js';
 import Jira from './jira.js';
+import Query from './query.js';
 import Table from './table.js';
 
 const DEFAULT_QUERY_LIMIT = 20;
@@ -18,6 +19,7 @@ class Issue extends Command {
     const cmd = program.command('show')
       .description('Show an issue')
       .option('-C, --comments', 'Show the comments too')
+      .option('-s, --subissues', 'Show the comments too')
       .argument('<id>', 'The issue ID')
       .action(async id => {
         const jira = new Jira(program);
@@ -139,6 +141,19 @@ class Issue extends Command {
         }
 
         console.log(table.toString());
+
+        if (cmd.opts().subissues) {
+          console.log("\nSub-issues:");
+          const children = await Query.runQuery(jira, `parent = "${id}"`, 999999);
+          Query.showIssues(jira, children.issues, children.total, resultFields);
+
+          if (issue.fields['Issue Type'].name === 'Epic') {
+            console.log("\nEpic issues:");
+            const children = await jira.spin('Fetching child issues...', jira.api.getIssuesForEpic(id));
+            Query.showIssues(jira, children.issues, children.total, resultFields);
+          }
+        }
+
       });
   }
 

@@ -133,11 +133,11 @@ class Field extends Command {
     switch (fieldData.schema.type) {
       case 'number':
         return {
-          value: await Ask.askNumber(`${fieldName}:`), key: fieldData.key
+          value: await Ask.askNumber(`${fieldData.name}:`), key: fieldData.key
         };
       case 'string':
         return {
-          value: await Ask.askString(`${fieldName}:`), key: fieldData.key
+          value: await Ask.askString(`${fieldData.name}:`), key: fieldData.key
         };
     }
 
