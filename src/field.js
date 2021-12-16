@@ -23,7 +23,7 @@ class Field extends Command {
         });
 
         resultFields.forEach(field => {
-          const supported = Field.isSupported(field.schema?.type);
+          const supported = Field.isSupported(field);
           table.addRow([{
             color: "blue",
             text: field.name
@@ -46,7 +46,7 @@ class Field extends Command {
           return;
         }
 
-        if (!Field.isSupported(fieldData.schema?.type)) {
+        if (!Field.isSupported(fieldData)) {
           console.log("Unsupported field.");
           return;
         }
@@ -95,11 +95,19 @@ class Field extends Command {
     return await jira.spin('Retrieving the fields...', jira.api.listFields());
   }
 
-  static isSupported(fieldType) {
-    return ["string", "number"].includes(fieldType);
+  static isSupported(fieldData) {
+    if (["string", "number"].includes(fieldData.schema?.type)) {
+      return true;
+    }
+
+    if ("allowedValues" in fieldData) {
+      return true;
+    }
+
+    return false;
   }
 
-  static async askFieldIfSupported(jira, fieldName) {
+  static async fetchAndAskFieldIfSupported(jira, fieldName) {
     const resultFields = await Field.listFields(jira);
 
     let fieldData;
@@ -112,7 +120,11 @@ class Field extends Command {
       return null;
     }
 
-    if (!Field.isSupported(fieldData.schema?.type)) {
+    return Field.askFieldIfSupported(fieldData);
+  }
+
+  static async askFieldIfSupported(fieldData) {
+    if (!Field.isSupported(fieldData)) {
       console.log("Unsupported field");
       return null;
     }
@@ -129,7 +141,12 @@ class Field extends Command {
         };
     }
 
-    return null;
+    const allowedValues = fieldData.allowedValues;
+    return await Ask.askList(`${fieldData.name}:`,
+      fieldData.allowedValues.map(value => ({
+        name: value.name,
+        value: value.id
+      })));
   }
 };
 

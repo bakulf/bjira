@@ -80,7 +80,7 @@ class Set extends Command {
   }
 
   static async setCustomField(jira, fieldName, ids) {
-    const field = await Field.askFieldIfSupported(jira, fieldName);
+    const field = await Field.fetchAndAskFieldIfSupported(jira, fieldName);
     if (!field) {
       console.log("Unsupported field type");
       return;
@@ -100,16 +100,30 @@ class Set extends Command {
 
   static async setStatus(jira, ids) {
     const transitionList = await jira.spin('Retrieving transitions...', jira.api.listTransitions(ids[0]));
-    const transitionId = await Ask.askList('Status:',
-      transitionList.transitions.map(transition => ({
+    const transitionData = await Ask.askList('Status:',
+      transitionList.transitions.filter(transition => transition.isAvailable).map(transition => ({
         name: transition.name,
-        value: transition.id
+        value: transition
       })));
+
     const transition = {
       transition: {
-        id: transitionId
+        id: transitionData.id
       }
     };
+
+    for (const field of Object.keys(transitionData.fields)) {
+      const fieldData = transitionData.fields[field];
+
+      if (!fieldData.required) continue;
+
+      if (!Field.isSupported(fieldData)) {
+        console.log(`Field ${field} is required but it's not supported`);
+        return;
+      }
+
+      transition.transition[fieldData.key] = await Field.askFieldIfSupported(fieldData);
+    }
 
     for (const id of ids) {
       await jira.spin(`Updating issue ${id}...`, jira.api.transitionIssue(id, transition));

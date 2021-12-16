@@ -35,6 +35,7 @@ class Create extends Command {
 
         const meta = await jira.spin('Retrieving issue metadata...',
           jira.apiRequest(`/issue/createmeta?projectKeys=${project.key}&issuetypeNames=${issueType.name}&expand=projects.issuetypes.fields`));
+
         const newIssue = {
           fields: {
             project: {
@@ -58,7 +59,7 @@ class Create extends Command {
           .issuetypes.find(i => i.name === issueType.name).fields;
         const requiredFields = Object.keys(issueFields).filter(
           key => issueFields[key].required &&
-          Field.isSupported(issueFields[key].schema.type) &&
+          Field.isSupported(issueFields[key]) &&
           !["summary", "description", "project"].includes(key)).map(key => issueFields[key]);
 
         for (const field of requiredFields) {
