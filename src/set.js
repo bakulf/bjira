@@ -14,16 +14,16 @@ class Set extends Command {
       .description('Update fields in an issue');
     setCmd.command('assignee')
       .description('Assign the issue to somebody')
-      .argument('<id>', 'The issue ID')
-      .action(async id => {
+      .argument('<IDs...>', 'The issue IDs')
+      .action(async ids => {
         const jira = new Jira(program);
-        await Set.assignIssue(jira, id);
+        await Set.assignIssue(jira, ids);
       });
 
     setCmd.command('unassign')
       .description('Unassign the issue')
-      .argument('<id>', 'The issue ID')
-      .action(async id => {
+      .argument('<IDs...>', 'The issue IDs')
+      .action(async ids => {
         const jira = new Jira(program);
 
         const issue = {
@@ -34,28 +34,30 @@ class Set extends Command {
           }
         }
 
-        await jira.spin('Updating the issue...', jira.api.updateIssue(id, issue));
+        for (const id of ids) {
+          await jira.spin(`Updating issue ${id}...`, jira.api.updateIssue(id, issue));
+        }
       });
 
     setCmd.command('status')
       .description('Change the status')
-      .argument('<id>', 'The issue ID')
-      .action(async id => {
+      .argument('<IDs...>', 'The issue IDs')
+      .action(async ids => {
         const jira = new Jira(program);
-        await Set.setStatus(jira, id);
+        await Set.setStatus(jira, ids);
       });
 
     setCmd.command('custom')
       .description('Set a custom field')
       .argument('<field>', 'The field name')
-      .argument('<id>', 'The issue ID')
-      .action(async (fieldName, id) => {
+      .argument('<ids...>', 'The issue IDs')
+      .action(async (fieldName, ids) => {
         const jira = new Jira(program);
-        await Set.setCustomField(jira, fieldName, id);
+        await Set.setCustomField(jira, fieldName, ids);
       });
   }
 
-  static async assignIssue(jira, id) {
+  static async assignIssue(jira, ids) {
     const userList = await User.pickUser(jira);
     const activeUsers = userList.filter(user => user.active);
     const assigneeId = await Ask.askList('Assignee:',
@@ -72,10 +74,12 @@ class Set extends Command {
       }
     }
 
-    await jira.spin('Updating the issue...', jira.api.updateIssue(id, issue));
+    for (const id of ids) {
+      await jira.spin(`Updating issue ${id}...`, jira.api.updateIssue(id, issue));
+    }
   }
 
-  static async setCustomField(jira, fieldName, id) {
+  static async setCustomField(jira, fieldName, ids) {
     const field = await Field.askFieldIfSupported(jira, fieldName);
     if (!field) {
       console.log("Unsupported field type");
@@ -85,15 +89,17 @@ class Set extends Command {
     const data = {};
     data[field.key] = field.value;
 
-    await jira.spin('Updating the issue...', jira.api.updateIssue(id, {
-      fields: {
-        ...data
-      }
-    }));
+    for (const id of ids) {
+      await jira.spin(`Updating issue ${id}...`, jira.api.updateIssue(id, {
+        fields: {
+          ...data
+        }
+      }));
+    }
   }
 
-  static async setStatus(jira, id) {
-    const transitionList = await jira.spin('Retrieving transitions...', jira.api.listTransitions(id));
+  static async setStatus(jira, ids) {
+    const transitionList = await jira.spin('Retrieving transitions...', jira.api.listTransitions(ids[0]));
     const transitionId = await Ask.askList('Status:',
       transitionList.transitions.map(transition => ({
         name: transition.name,
@@ -105,7 +111,9 @@ class Set extends Command {
       }
     };
 
-    await jira.spin('Updating the issue...', jira.api.transitionIssue(id, transition));
+    for (const id of ids) {
+      await jira.spin(`Updating issue ${id}...`, jira.api.transitionIssue(id, transition));
+    }
   }
 };
 
