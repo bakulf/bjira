@@ -73,6 +73,11 @@ class Project extends Command {
       issueTypes: project.issuetypes,
     };
   }
+
+  static async metadata(jira, project, issueType) {
+    return await jira.spin('Retrieving the fields...',
+      jira.apiRequest(`/issue/createmeta?projectKeys=${project}&issuetypeNames=${issueType}&expand=projects.issuetypes.fields`));
+  }
 };
 
 export default Project;

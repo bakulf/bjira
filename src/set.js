@@ -5,6 +5,7 @@
 import Ask from './ask.js';
 import Command from './command.js';
 import Field from './field.js';
+import Issue from './issue.js';
 import Jira from './jira.js';
 import User from './user.js';
 
@@ -50,10 +51,24 @@ class Set extends Command {
     setCmd.command('custom')
       .description('Set a custom field')
       .argument('<field>', 'The field name')
-      .argument('<ids...>', 'The issue IDs')
-      .action(async (fieldName, ids) => {
+      .argument('<id>', 'The issue ID')
+      .action(async (fieldName, id) => {
         const jira = new Jira(program);
-        await Set.setCustomField(jira, fieldName, ids);
+
+        const resultFields = await Field.listFields(jira);
+        const result = await jira.spin('Running query...', jira.api.findIssue(id));
+        const issue = Issue.replaceFields(result, resultFields);
+
+        const customField = jira.fields.find(
+          field => field.projectName === issue.fields['Project'].key &&
+          field.issueTypeName === issue.fields['Issue Type'].name &&
+          field.fieldName === fieldName);
+        if (!customField) {
+          console.log("Unknown custom field");
+          return;
+        }
+
+        await Set.setCustomField(jira, customField, id);
       });
   }
 
@@ -79,9 +94,9 @@ class Set extends Command {
     }
   }
 
-  static async setCustomField(jira, fieldName, ids) {
-    const field = await Field.fetchAndAskFieldIfSupported(jira, fieldName);
-    if (!field) {
+  static async setCustomField(jira, customField, id) {
+    const field = await Field.fetchAndAskFieldIfSupported(jira, customField);
+    if (field === null) {
       console.log("Unsupported field type");
       return;
     }
@@ -89,13 +104,11 @@ class Set extends Command {
     const data = {};
     data[field.key] = field.value;
 
-    for (const id of ids) {
-      await jira.spin(`Updating issue ${id}...`, jira.api.updateIssue(id, {
-        fields: {
-          ...data
-        }
-      }));
-    }
+    await jira.spin(`Updating issue ${id}...`, jira.api.updateIssue(id, {
+      fields: {
+        ...data
+      }
+    }));
   }
 
   static async setStatus(jira, ids) {

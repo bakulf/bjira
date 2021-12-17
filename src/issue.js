@@ -5,6 +5,7 @@
 import Command from './command.js';
 import Field from './field.js';
 import Jira from './jira.js';
+import Project from './project.js';
 import Query from './query.js';
 import Table from './table.js';
 
@@ -86,7 +87,22 @@ class Issue extends Command {
           ]
         ]);
 
-        jira.fields.forEach(fieldName => table.addRow([fieldName, issue.fields[fieldName] || "unset"]));
+        const customFields = jira.fields.filter(
+          field => field.projectName === issue.fields['Project'].key &&
+          field.issueTypeName === issue.fields['Issue Type'].name);
+        if (customFields.length > 0) {
+          const meta = await Project.metadata(jira, issue.fields['Project'].key, issue.fields['Issue Type'].name);
+          customFields.forEach(field => {
+            const fields = meta.projects.find(p => p.key === field.projectName)
+              .issuetypes.find(i => i.name === field.issueTypeName).fields;
+            for (const name in fields) {
+              const fieldObj = fields[name];
+              if (fieldObj.name === field.fieldName) {
+                table.addRow([field.fieldName, Field.fieldValue(issue.fields[field.fieldName], fieldObj) || "unset"]);
+              }
+            }
+          });
+        }
 
         table.addRows([
           [

@@ -33,8 +33,7 @@ class Create extends Command {
             }
           })));
 
-        const meta = await jira.spin('Retrieving issue metadata...',
-          jira.apiRequest(`/issue/createmeta?projectKeys=${project.key}&issuetypeNames=${issueType.name}&expand=projects.issuetypes.fields`));
+        const meta = await Project.metadata(jira, project.key, issueType.name);
 
         const newIssue = {
           fields: {
@@ -101,10 +100,12 @@ class Create extends Command {
           await Set.setStatus(jira, [issue.key]);
         }
 
-        if (jira.fields && jira.fields.length > 0 &&
-          await Ask.askBoolean('Do you want to set custom fields?')) {
-          for (let fieldName of jira.fields) {
-            await Set.setCustomField(jira, fieldName, [issue.key]);
+        const customFields = jira.fields.filter(
+          field => field.projectName === project.key &&
+          field.issueTypeName === issueType.name);
+        if (customFields.length > 0 && await Ask.askBoolean('Do you want to set custom fields?')) {
+          for (let customField of customFields) {
+            await Set.setCustomField(jira, customField, issue.key);
           }
         }
 

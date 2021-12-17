@@ -31,16 +31,27 @@ class Jira {
     this._config.latestProject = latestProject;
   }
 
-  addField(fieldName) {
+  addField(projectName, issueTypeName, fieldName) {
     if (!Array.isArray(this._config.fields)) this._config.fields = [];
 
-    this._config.fields.push(fieldName);
+    if (!this._config.fields.find(field => field.projectName === projectName &&
+        field.issueTypeName === issueTypeName && field.fieldName === fieldName)) {
+      this._config.fields.push({
+        projectName,
+        issueTypeName,
+        fieldName
+      });
+    }
   }
 
-  removeField(fieldName) {
-    if (!Array.isArray(this._config.fields) || this._config.fields.indexOf(fieldName) === -1) return;
+  removeField(projectName, issueTypeName, fieldName) {
+    if (!Array.isArray(this._config.fields)) return;
 
-    this._config.fields.splice(this._config.fields.indexOf(fieldName), 1);
+    const pos = this._config.fields.findIndex(field => field.projectName === projectName &&
+      field.issueTypeName === issueTypeName && field.fieldName === fieldName);
+    if (pos !== -1) {
+      this._config.fields.splice(pos, 1);
+    }
   }
 
   get fields() {

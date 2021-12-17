@@ -2,9 +2,12 @@
 //
 // SPDX-License-Identifier: MIT
 
+import color from 'chalk';
+
 import Ask from './ask.js';
 import Command from './command.js';
 import Jira from './jira.js';
+import Project from './project.js';
 import Table from './table.js';
 
 class Field extends Command {
@@ -16,59 +19,75 @@ class Field extends Command {
       .action(async () => {
         const jira = new Jira(program);
 
-        const resultFields = await Field.listFields(jira);
+        const resultFields = await Field.fullListFields(jira);
 
-        const table = new Table({
-          head: ['Name', 'Supported', 'Type']
-        });
+        resultFields.projects.forEach(project => {
+          console.log(`\nProject: ${color.blue(project.name)} (${color.blue(project.key)})`);
+          project.issuetypes.forEach(issueType => {
+            console.log(`\nIssue type: ${color.yellow(issueType.name)}`);
 
-        resultFields.forEach(field => {
-          const supported = Field.isSupported(field);
-          table.addRow([{
-            color: "blue",
-            text: field.name
-          }, supported, supported ? field.schema?.type : ""]);
+            const table = new Table({
+              head: ['Name', 'Supported', 'Type']
+            });
+
+            for (const fieldName in issueType.fields) {
+              const field = issueType.fields[fieldName];
+              const supported = Field.isSupported(field);
+              table.addRow([{
+                color: "blue",
+                text: field.name
+              }, supported, supported ? field.schema?.type : ""]);
+            }
+
+            console.log(table.toString());
+          });
         });
-        console.log(table.toString());
       });
 
     cmd.command("add")
       .description("Add a custom field to be shown")
+      .argument('<project>', 'The project name')
+      .argument('<issueType>', 'The issue type')
       .argument('<field>', 'The field name')
-      .action(async fieldName => {
+      .action(async (projectName, issueTypeName, fieldName) => {
         const jira = new Jira(program);
 
-        const resultFields = await Field.listFields(jira);
-
-        const fieldData = resultFields.find(field => field.name === fieldName);
-        if (!fieldData) {
-          console.log("Unknown field.");
+        const meta = await Project.metadata(jira, projectName, issueTypeName);
+        const issueType = meta.projects.find(p => p.key === projectName)
+          .issuetypes.find(i => i.name === issueTypeName);
+        if (!issueType) {
+          console.log(`Issue type ${issueTypeName} does not exist.`);
           return;
         }
 
-        if (!Field.isSupported(fieldData)) {
-          console.log("Unsupported field.");
+        for (const name in issueType.fields) {
+          const field = issueType.fields[name];
+          if (field.name !== fieldName) continue;
+
+          if (!Field.isSupported(field)) {
+            console.log("Unsupported field.");
+            return;
+          }
+
+          jira.addField(projectName, issueTypeName, fieldName);
+          jira.syncConfig();
+
+          console.log('Config file succesfully updated');
           return;
         }
 
-        jira.addField(fieldName);
-        jira.syncConfig();
-
-        console.log('Config file succesfully updated');
+        console.log(`Field ${fieldName} does not exist in Issue type ${issueTypeName} for project ${projectName}`);
       });
 
     cmd.command("remove")
       .description("Remove a custom field")
+      .argument('<project>', 'The project name')
+      .argument('<issueType>', 'The issue type')
       .argument('<field>', 'The field name')
-      .action(async fieldName => {
+      .action(async (projectName, issueTypeName, fieldName) => {
         const jira = new Jira(program);
 
-        if (!jira.fields.includes(fieldName)) {
-          console.log("Unknown field.");
-          return;
-        }
-
-        jira.removeField(fieldName);
+        jira.removeField(projectName, issueTypeName, fieldName);
         jira.syncConfig();
 
         console.log('Config file succesfully updated');
@@ -80,12 +99,17 @@ class Field extends Command {
         const jira = new Jira(program);
 
         const table = new Table({
-          head: ['Name']
+          head: ['Project', 'Issue Type', 'Name']
         });
 
-        jira.fields.forEach(fieldName => table.addRow([{
+        jira.fields.forEach(field => table.addRow([{
           color: "blue",
-          text: fieldName
+          text: field.projectName,
+        }, {
+          color: "yellow",
+          text: field.issueTypeName
+        }, {
+          text: field.fieldName
         }]));
         console.log(table.toString());
       });
@@ -93,6 +117,11 @@ class Field extends Command {
 
   static async listFields(jira) {
     return await jira.spin('Retrieving the fields...', jira.api.listFields());
+  }
+
+  static async fullListFields(jira) {
+    return await jira.spin('Retrieving the fields...',
+      jira.apiRequest('/issue/createmeta?expand=projects.issuetypes.fields'));
   }
 
   static isSupported(fieldData) {
@@ -107,20 +136,35 @@ class Field extends Command {
     return false;
   }
 
-  static async fetchAndAskFieldIfSupported(jira, fieldName) {
-    const resultFields = await Field.listFields(jira);
-
-    let fieldData;
-    resultFields.forEach(field => {
-      if (field.name === fieldName) fieldData = field;
-    });
-
-    if (!fieldData) {
-      console.log(`Unable to find the field "${fieldName}"`);
+  static fieldValue(field, fieldData) {
+    if (!Field.isSupported(fieldData)) {
       return null;
     }
 
-    return Field.askFieldIfSupported(fieldData);
+    let type;
+    switch (fieldData.schema.type) {
+      case 'number':
+        return field;
+      case 'string':
+        return field;
+    }
+
+    return field.name;
+  }
+
+  static async fetchAndAskFieldIfSupported(jira, field) {
+    const meta = await Project.metadata(jira, field.projectName, field.issueTypeName);
+    const fields = meta.projects.find(p => p.key === field.projectName)
+      .issuetypes.find(i => i.name === field.issueTypeName).fields;
+
+    for (const name in fields) {
+      const fieldObj = fields[name];
+      if (fieldObj.name === field.fieldName) {
+        return Field.askFieldIfSupported(fieldObj);
+      }
+    }
+
+    return null;
   }
 
   static async askFieldIfSupported(fieldData) {
@@ -141,12 +185,16 @@ class Field extends Command {
         };
     }
 
-    const allowedValues = fieldData.allowedValues;
-    return await Ask.askList(`${fieldData.name}:`,
-      fieldData.allowedValues.map(value => ({
-        name: value.name,
-        value: value.id
-      })));
+    return {
+      key: fieldData.key,
+      value: await Ask.askList(`${fieldData.name}:`,
+        fieldData.allowedValues.map(value => ({
+          name: value.name,
+          value: {
+            id: value.id
+          }
+        })))
+    };
   }
 };
 

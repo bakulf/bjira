@@ -20,6 +20,11 @@ class ErrorHandler {
         color: "blue",
         text: error
       }]));
+    } else if ("message" in e.error) {
+      table.addRow([{
+        color: "blue",
+        text: e.error.message
+      }]);
     } else {
       table.addRow([{
         color: "blue",
