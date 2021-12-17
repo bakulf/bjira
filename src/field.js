@@ -19,7 +19,8 @@ class Field extends Command {
       .action(async () => {
         const jira = new Jira(program);
 
-        const resultFields = await Field.fullListFields(jira);
+        const resultFields = await jira.spin('Retrieving the fields...',
+          jira.apiRequest('/issue/createmeta?expand=projects.issuetypes.fields'));
 
         resultFields.projects.forEach(project => {
           console.log(`\nProject: ${color.blue(project.name)} (${color.blue(project.key)})`);
@@ -117,11 +118,6 @@ class Field extends Command {
 
   static async listFields(jira) {
     return await jira.spin('Retrieving the fields...', jira.api.listFields());
-  }
-
-  static async fullListFields(jira) {
-    return await jira.spin('Retrieving the fields...',
-      jira.apiRequest('/issue/createmeta?expand=projects.issuetypes.fields'));
   }
 
   static isSupported(fieldData) {

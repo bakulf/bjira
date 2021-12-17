@@ -59,10 +59,10 @@ class Create extends Command {
         const requiredFields = Object.keys(issueFields).filter(
           key => issueFields[key].required &&
           Field.isSupported(issueFields[key]) &&
-          !["summary", "description", "project"].includes(key)).map(key => issueFields[key]);
+          !["issuetype", "summary", "description", "project"].includes(key)).map(key => issueFields[key]);
 
         for (const field of requiredFields) {
-          newIssue.fields[field.key] = await Ask.askString(`${field.name}:`);
+          newIssue.fields[field.key] = await Field.askFieldIfSupported(field);
         }
 
         if (issueType.name !== 'Epic' &&

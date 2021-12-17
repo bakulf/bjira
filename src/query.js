@@ -85,18 +85,6 @@ class Query extends Command {
       };
 
       await computeIssueInTree(issues, newIssues, parentIssueData);
-
-      // In the already processed issues
-      if (addIssueInTree(newIssues, issue, parentId)) {
-        return;
-      }
-
-      // In the non-already processed issues
-      if (addIssueInTree(issues, issue, parentId)) {
-        return;
-      }
-
-      newIssues.push(issue);
     };
 
     if (grouped) {
