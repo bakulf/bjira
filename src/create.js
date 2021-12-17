@@ -62,7 +62,8 @@ class Create extends Command {
           !["issuetype", "summary", "description", "project"].includes(key)).map(key => issueFields[key]);
 
         for (const field of requiredFields) {
-          newIssue.fields[field.key] = await Field.askFieldIfSupported(field);
+          const fieldData = await Field.askFieldIfSupported(field);
+          newIssue.fields[fieldData.key] = fieldData.value;
         }
 
         if (issueType.name !== 'Epic' &&

@@ -172,18 +172,25 @@ class Field extends Command {
     let type;
     switch (fieldData.schema.type) {
       case 'number':
-        return await Ask.askNumber(`${fieldData.name}:`);
+        return {
+          value: await Ask.askNumber(`${fieldData.name}:`), key: fieldData.key
+        };
       case 'string':
-        return await Ask.askString(`${fieldData.name}:`);
+        return {
+          value: await Ask.askString(`${fieldData.name}:`), key: fieldData.key
+        };
     }
 
-    return await Ask.askList(`${fieldData.name}:`,
-      fieldData.allowedValues.map(value => ({
-        name: value.name,
-        value: {
-          id: value.id
-        }
-      })))
+    return {
+      key: fieldData.key,
+      value: await Ask.askList(`${fieldData.name}:`,
+        fieldData.allowedValues.map(value => ({
+          name: value.name,
+          value: {
+            id: value.id
+          }
+        })))
+    };
   }
 };
 

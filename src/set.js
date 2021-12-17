@@ -131,7 +131,8 @@ class Set extends Command {
         return;
       }
 
-      transition.transition[fieldData.key] = await Field.askFieldIfSupported(fieldData);
+      const fieldValue = await Field.askFieldIfSupported(fieldData);
+      transition.transition[fieldValue.key] = fieldValue.value;
     }
 
     await jira.spin(`Updating issue ${id}...`, jira.api.transitionIssue(id, transition));
