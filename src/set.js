@@ -15,16 +15,16 @@ class Set extends Command {
       .description('Update fields in an issue');
     setCmd.command('assignee')
       .description('Assign the issue to somebody')
-      .argument('<IDs...>', 'The issue IDs')
-      .action(async ids => {
+      .argument('<ID>', 'The issue ID')
+      .action(async id => {
         const jira = new Jira(program);
-        await Set.assignIssue(jira, ids);
+        await Set.assignIssue(jira, id);
       });
 
     setCmd.command('unassign')
       .description('Unassign the issue')
-      .argument('<IDs...>', 'The issue IDs')
-      .action(async ids => {
+      .argument('<ID>', 'The issue ID')
+      .action(async id => {
         const jira = new Jira(program);
 
         const issue = {
@@ -35,17 +35,15 @@ class Set extends Command {
           }
         }
 
-        for (const id of ids) {
-          await jira.spin(`Updating issue ${id}...`, jira.api.updateIssue(id, issue));
-        }
+        await jira.spin(`Updating issue ${id}...`, jira.api.updateIssue(id, issue));
       });
 
     setCmd.command('status')
       .description('Change the status')
-      .argument('<IDs...>', 'The issue IDs')
-      .action(async ids => {
+      .argument('<ID>', 'The issue ID')
+      .action(async id => {
         const jira = new Jira(program);
-        await Set.setStatus(jira, ids);
+        await Set.setStatus(jira, id);
       });
 
     setCmd.command('custom')
@@ -72,7 +70,7 @@ class Set extends Command {
       });
   }
 
-  static async assignIssue(jira, ids) {
+  static async assignIssue(jira, id) {
     const userList = await User.pickUser(jira);
     const activeUsers = userList.filter(user => user.active);
     const assigneeId = await Ask.askList('Assignee:',
@@ -89,9 +87,7 @@ class Set extends Command {
       }
     }
 
-    for (const id of ids) {
-      await jira.spin(`Updating issue ${id}...`, jira.api.updateIssue(id, issue));
-    }
+    await jira.spin(`Updating issue ${id}...`, jira.api.updateIssue(id, issue));
   }
 
   static async setCustomField(jira, customField, id) {
@@ -111,8 +107,8 @@ class Set extends Command {
     }));
   }
 
-  static async setStatus(jira, ids) {
-    const transitionList = await jira.spin('Retrieving transitions...', jira.api.listTransitions(ids[0]));
+  static async setStatus(jira, id) {
+    const transitionList = await jira.spin('Retrieving transitions...', jira.api.listTransitions(id));
     const transitionData = await Ask.askList('Status:',
       transitionList.transitions.filter(transition => transition.isAvailable).map(transition => ({
         name: transition.name,
@@ -138,9 +134,7 @@ class Set extends Command {
       transition.transition[fieldData.key] = await Field.askFieldIfSupported(fieldData);
     }
 
-    for (const id of ids) {
-      await jira.spin(`Updating issue ${id}...`, jira.api.transitionIssue(id, transition));
-    }
+    await jira.spin(`Updating issue ${id}...`, jira.api.transitionIssue(id, transition));
   }
 };
 

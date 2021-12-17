@@ -93,11 +93,11 @@ class Create extends Command {
         console.log('');
 
         if (await Ask.askBoolean('Do you want to assign it?')) {
-          await Set.assignIssue(jira, [issue.key]);
+          await Set.assignIssue(jira, issue.key);
         }
 
         if (await Ask.askBoolean('Do you want to set a status?')) {
-          await Set.setStatus(jira, [issue.key]);
+          await Set.setStatus(jira, issue.key);
         }
 
         const customFields = jira.fields.filter(
