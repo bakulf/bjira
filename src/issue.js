@@ -68,9 +68,6 @@ class Issue extends Command {
             'Assignee', Issue.showUser(issue.fields['Assignee'])
           ],
           [
-            'Priority', issue.fields['Priority'].name
-          ],
-          [
             'Epic Link', {
               color: "yellow",
               text: this.showEpicIssue(epicIssue)
