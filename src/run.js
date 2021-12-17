@@ -19,6 +19,7 @@ class Run extends Command {
       .option('-l, --limit <limit>',
         `Set the query limit. Default ${DEFAULT_QUERY_LIMIT}`,
         DEFAULT_QUERY_LIMIT)
+      .option('-g, --grouped', 'Group the issues by parenting')
       .action(async name => {
         const jira = new Jira(program);
         const opts = cmd.opts();
@@ -46,7 +47,7 @@ class Run extends Command {
         const resultFields = await Field.listFields(jira);
         const result = await Query.runQuery(jira, query, opts.limit);
 
-        Query.showIssues(jira, result.issues, result.total, resultFields);
+        await Query.showIssues(jira, result.issues, result.total, resultFields, opts.grouped);
       });
   }
 

@@ -12,6 +12,8 @@ class Table {
     options.head?.forEach(head => {
       this._columns.push(this._createColumn(head, 0));
     });
+
+    this._unresizableColumns = options.unresizableColumns || [];
   }
 
   addRow(row) {
@@ -58,7 +60,7 @@ class Table {
       const rowHeight = Math.max(...this._columns.map(column => this._computeRowHeight(column, row)));
 
       for (let i = 0; i < rowHeight; ++i) {
-        lines.push(this._columns.map(column => this._colorize(column.rows[row], this._toWidth(this._computeLine(column.rows[row], i), column.width))).join(" "));
+        lines.push(this._columns.map(column => this._stylize(column.rows[row], this._toWidth(this._computeLine(column.rows[row], i), column.width))).join(" "));
       }
     }
 
@@ -118,7 +120,7 @@ class Table {
   }
 
   _maybeSplitRow(row, width) {
-    if (row.length < width) return [row];
+    if (row.length <= width) return [row];
 
     const rows = [];
     let currentRow = "";
@@ -142,8 +144,9 @@ class Table {
 
   _resizeWidthOfOne() {
     const max = Math.max(...this._columns.map(column => column.width));
-    for (let column of this._columns) {
-      if (column.width === max) {
+    for (let columnId in this._columns) {
+      const column = this._columns[columnId];
+      if (!this._unresizableColumns.includes(columnId) && column.width === max) {
         --column.width;
         break;
       }
@@ -152,6 +155,14 @@ class Table {
 
   _truncate(str, width) {
     return str.slice(0, width);
+  }
+
+  _stylize(row, text) {
+    if (!("style" in row) || row.style === "normal") {
+      return this._colorize(row, text);
+    }
+
+    return color[row.style].apply(null, [this._colorize(row, text)]);
   }
 
   _colorize(row, text) {

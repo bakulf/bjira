@@ -145,12 +145,12 @@ class Issue extends Command {
         if (cmd.opts().subissues) {
           console.log("\nSub-issues:");
           const children = await Query.runQuery(jira, `parent = "${id}"`, 999999);
-          Query.showIssues(jira, children.issues, children.total, resultFields);
+          await Query.showIssues(jira, children.issues, children.total, resultFields, false);
 
           if (issue.fields['Issue Type'].name === 'Epic') {
             console.log("\nEpic issues:");
             const children = await jira.spin('Fetching child issues...', jira.api.getIssuesForEpic(id));
-            Query.showIssues(jira, children.issues, children.total, resultFields);
+            await Query.showIssues(jira, children.issues, children.total, resultFields, false);
           }
         }
 
