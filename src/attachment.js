@@ -25,7 +25,7 @@ class Attachment extends Command {
         const issue = Issue.replaceFields(result, resultFields);
 
         const attachment = issue.fields['Attachment'].find(attachment => attachment.id === attachmentId);
-        const attachmentData = await jira.api.downloadAttachment(attachment);
+        const attachmentData = await jira.spin('Retriving attachment...', jira.api.downloadAttachment(attachment));
         process.stdout.write(attachmentData);
       });
 

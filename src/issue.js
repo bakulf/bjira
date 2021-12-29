@@ -153,6 +153,9 @@ class Issue extends Command {
               [
                 'Mime-type', attachment.mimeType
               ],
+              [
+                'Created on', attachment['Created']
+              ],
             ]);
           });
         }
