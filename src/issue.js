@@ -19,6 +19,7 @@ class Issue extends Command {
   addOptions(program) {
     const cmd = program.command('show')
       .description('Show an issue')
+      .option('-a, --attachments', 'Show the attachments too')
       .option('-C, --comments', 'Show the comments too')
       .option('-s, --subissues', 'Show the comments too')
       .argument('<id>', 'The issue ID')
@@ -121,9 +122,40 @@ class Issue extends Command {
             '', ''
           ],
           [
+            'Attachments', issue.fields['Attachment'].length
+          ],
+          [
             'Comments', issue.fields['Comment'].total
-          ]
+          ],
         ]);
+
+        if (cmd.opts().attachments) {
+          issue.fields['Attachment'].forEach(attachment => {
+            table.addRows([
+              [
+                '', ''
+              ],
+              [
+                'Attachment', {
+                  color: "yellow",
+                  text: attachment.id
+                }
+              ],
+              [
+                'Filename', attachment.filename
+              ],
+              [
+                'Author', Issue.showUser(attachment.author)
+              ],
+              [
+                'Size', attachment.size
+              ],
+              [
+                'Mime-type', attachment.mimeType
+              ],
+            ]);
+          });
+        }
 
         if (cmd.opts().comments) {
           issue.fields['Comment'].comments.forEach(comment => {
@@ -148,7 +180,7 @@ class Issue extends Command {
               ],
               [
                 'Body', comment.body
-              ]
+              ],
             ]);
           });
         }

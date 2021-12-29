@@ -9,6 +9,7 @@ import fs from 'fs';
 import os from 'os';
 import path from 'path';
 
+import Attachment from './attachment.js';
 import Comment from './comment.js';
 import Create from './create.js';
 import Field from './field.js';
@@ -24,6 +25,7 @@ import Sprint from './sprint.js';
 const DEFAULT_CONFIG_FILE = path.join(os.homedir(), ".bjira.json")
 
 const commands = [
+  new Attachment(),
   new Comment(),
   new Create(),
   new Field(),
