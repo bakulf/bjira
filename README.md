@@ -15,11 +15,11 @@ jira settings.
 
 ```
 $ bjira init
-? Provide your jira host: your-config.atlassian.net
+? Provide your jira host: your-domain.atlassian.net
 ? Please provide your jira username: username
 ? API token: [hidden]
 ? Enable HTTPS Protocol? Yes
-Config file succesfully created in: /home/baku/.bjira.json
+Config file succesfully created in: /home/<username>/.bjira.json
 ```
 
 ## How to use it
@@ -63,10 +63,11 @@ Jira is strongly configurable via custom fields. You can retrieve the list of cu
 bjira field listall
 ```
 
-If you want to see some of them in the issue report, add them:
+If you want to see some of them in the issue report, add them for the project (FOO) and the issue type (Story):
 
 ```
-bjira field add "Story Points"
+bjira field add FOO Story "Story Points"
 ```
 
 Any custom fields added to the list will be shown in the issue report (See `bjira show`).
+You can also set custom fields using `bira set custom `Story Points' ISSUE-ID`.
