@@ -181,15 +181,21 @@ class Field extends Command {
         };
     }
 
+    let value = await Ask.askList(`${fieldData.name}:`,
+      fieldData.allowedValues.map(value => ({
+        name: value.name,
+        value: {
+          id: value.id
+        }
+      })));
+
+    if (fieldData.schema.type === 'array') {
+      value = [value];
+    }
+
     return {
       key: fieldData.key,
-      value: await Ask.askList(`${fieldData.name}:`,
-        fieldData.allowedValues.map(value => ({
-          name: value.name,
-          value: {
-            id: value.id
-          }
-        })))
+      value,
     };
   }
 };
