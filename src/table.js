@@ -53,14 +53,14 @@ class Table {
     const lines = [];
 
     if (this._columns.find(column => !!column.head)) {
-      lines.push(this._columns.map(column => (color.red(this._toWidth(column.head || "", column.width)))).join(" "));
+      lines.push(this._columns.map((column, pos, array) => (color.red(this._toWidth(column.head || "", column.width, pos < array.length - 1)))).join(" "));
     }
 
     for (let row = 0; row < this._rows; ++row) {
       const rowHeight = Math.max(...this._columns.map(column => this._computeRowHeight(column, row)));
 
       for (let i = 0; i < rowHeight; ++i) {
-        lines.push(this._columns.map(column => this._stylize(column.rows[row], this._toWidth(this._computeLine(column.rows[row], i), column.width))).join(" "));
+        lines.push(this._columns.map((column, pos, array) => this._stylize(column.rows[row], this._toWidth(this._computeLine(column.rows[row], i), column.width, pos < array.length - 1))).join(" "));
       }
     }
 
@@ -87,7 +87,7 @@ class Table {
     return column.rows[row].text.length;
   }
 
-  _toWidth(str, width) {
+  _toWidth(str, width, spaces) {
     str = str || "";
 
     let strLength = str.length;
@@ -95,7 +95,9 @@ class Table {
       return this._truncate(str, width - 1) + "…";
     }
 
-    for (let strLength = str.length; strLength < width; ++strLength) str += " ";
+    if (spaces) {
+      for (let strLength = str.length; strLength < width; ++strLength) str += " ";
+    }
     return str;
   }
 
