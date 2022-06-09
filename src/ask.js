@@ -61,6 +61,16 @@ class Ask {
     }]);
     return answer.value;
   }
+
+  static async askCallback(message, callback) {
+    const answer = await inquirer.prompt([{
+      type: 'autocomplete',
+      name: 'value',
+      message,
+      source: (answers, input) => callback(input),
+    }]);
+    return answer.value;
+  }
 };
 
 export default Ask;

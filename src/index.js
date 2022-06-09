@@ -15,6 +15,7 @@ import Create from './create.js';
 import Field from './field.js';
 import Init from './init.js';
 import Issue from './issue.js';
+import Label from './label.js';
 import Preset from './preset.js';
 import Project from './project.js';
 import Query from './query.js';
@@ -31,6 +32,7 @@ const commands = [
   new Field(),
   new Init(),
   new Issue(),
+  new Label(),
   new Preset(),
   new Project(),
   new Query(),
