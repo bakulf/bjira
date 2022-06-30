@@ -145,6 +145,10 @@ class Field extends Command {
         return field;
     }
 
+    if (Array.isArray(field)) {
+      return field.map(f => this.fieldValue(f, fieldData)).join(", ");
+    }
+
     return field.name;
   }
 
