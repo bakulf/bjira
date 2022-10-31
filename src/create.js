@@ -12,6 +12,7 @@ import Issue from './issue.js';
 import Project from './project.js';
 import Query from './query.js';
 import Set from './set.js';
+import Sprint from './sprint.js';
 import User from './user.js';
 import Utils from './utils.js';
 
@@ -107,6 +108,10 @@ class Create extends Command {
           for (let customField of customFields) {
             await Set.setCustomField(jira, customField, issue.key);
           }
+        }
+
+        if (await Ask.askBoolean('Do you want to add it to the current sprint?')) {
+          await Sprint.add(jira, issue.key);
         }
       });
   }
