@@ -4,9 +4,11 @@
 
 import inquirer from 'inquirer';
 import inquirerAutocompletePrompt from 'inquirer-autocomplete-prompt';
+import inquirerCheckboxPlusPrompt from 'inquirer-checkbox-plus-prompt';
 import fuzzy from 'fuzzy';
 
 inquirer.registerPrompt('autocomplete', inquirerAutocompletePrompt);
+inquirer.registerPrompt('checkbox-plus', inquirerCheckboxPlusPrompt);
 
 class Ask {
   static async askString(message, defaultValue = undefined) {
@@ -71,6 +73,25 @@ class Ask {
     }]);
     return answer.value;
   }
+
+  static async askMultiList(message, list, defaultValue = null) {
+    const answer = await inquirer.prompt([{
+      type: 'checkbox-plus',
+      name: 'value',
+      message,
+      default: defaultValue,
+      searchable: true,
+      source: (answers, input) => {
+        return new Promise(resolve => {
+          resolve(fuzzy.filter(input || '', list, {
+            extract: el => el.name
+          }).map(element => element.original));
+        });
+      },
+    }]);
+    return answer.value;
+  }
+
 };
 
 export default Ask;

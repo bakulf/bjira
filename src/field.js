@@ -152,7 +152,7 @@ class Field extends Command {
     return field.name;
   }
 
-  static async fetchAndAskFieldIfSupported(jira, field) {
+  static async fetchAndAskFieldIfSupported(jira, field, defaultValue = null) {
     const meta = await Project.metadata(jira, field.projectName, field.issueTypeName);
     const fields = meta.projects.find(p => p.key === field.projectName)
       .issuetypes.find(i => i.name === field.issueTypeName).fields;
@@ -160,14 +160,14 @@ class Field extends Command {
     for (const name in fields) {
       const fieldObj = fields[name];
       if (fieldObj.name === field.fieldName) {
-        return Field.askFieldIfSupported(fieldObj);
+        return Field.askFieldIfSupported(fieldObj, defaultValue);
       }
     }
 
     return null;
   }
 
-  static async askFieldIfSupported(fieldData) {
+  static async askFieldIfSupported(fieldData, defaultValue = null) {
     if (!Field.isSupported(fieldData)) {
       console.log("Unsupported field");
       return null;
@@ -183,19 +183,36 @@ class Field extends Command {
         return {
           value: await Ask.askString(`${fieldData.name}:`), key: fieldData.key
         };
+
+      case 'array':
+        if (Array.isArray(defaultValue)) {
+          defaultValue = defaultValue.map(a => ({
+            id: a.id
+          }));
+        }
+
+        const value = await Ask.askMultiList(`${fieldData.name}:`,
+          fieldData.allowedValues.map(value => ({
+            name: value.name,
+            value: {
+              id: value.id
+            }
+          })),
+          defaultValue);
+
+        return {
+          key: fieldData.key,
+            value: value,
+        };
     }
 
-    let value = await Ask.askList(`${fieldData.name}:`,
+    const value = await Ask.askList(`${fieldData.name}:`,
       fieldData.allowedValues.map(value => ({
         name: value.name,
         value: {
           id: value.id
         }
       })));
-
-    if (fieldData.schema.type === 'array') {
-      value = [value];
-    }
 
     return {
       key: fieldData.key,

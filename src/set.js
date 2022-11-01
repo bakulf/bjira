@@ -66,7 +66,7 @@ class Set extends Command {
           return;
         }
 
-        await Set.setCustomField(jira, customField, id);
+        await Set.setCustomField(jira, customField, id, issue.fields[customField.fieldName]);
       });
   }
 
@@ -90,8 +90,8 @@ class Set extends Command {
     await jira.spin(`Updating issue ${id}...`, jira.api.updateIssue(id, issue));
   }
 
-  static async setCustomField(jira, customField, id) {
-    const field = await Field.fetchAndAskFieldIfSupported(jira, customField);
+  static async setCustomField(jira, customField, id, defaultValue = null) {
+    const field = await Field.fetchAndAskFieldIfSupported(jira, customField, defaultValue);
     if (field === null) {
       console.log("Unsupported field type");
       return;

@@ -17,7 +17,7 @@ class Run extends Command {
       .argument('<name>', 'The preset name')
       .option('-q, --query <query...>')
       .option('-l, --limit <limit>',
-        `Set the query limit. Default ${DEFAULT_QUERY_LIMIT}`,
+        `Set the query limit`,
         DEFAULT_QUERY_LIMIT)
       .option('-g, --grouped', 'Group the issues by parenting')
       .action(async name => {
