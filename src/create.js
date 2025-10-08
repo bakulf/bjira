@@ -110,7 +110,7 @@ class Create extends Command {
           }
         }
 
-        if (await Ask.askBoolean('Do you want to add it to the current sprint?')) {
+        if (await Ask.askBoolean('Do you want to add it to a sprint?')) {
           await Sprint.add(jira, issue.key);
         }
       });

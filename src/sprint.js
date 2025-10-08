@@ -156,10 +156,14 @@ class Sprint extends Command {
         value: board.id
       })));
 
-    const sprintList = await jira.spin('Retrieving sprints...',
-      jira.api.getAllSprints(boardId));
+    let sprintList = [];
+    while (true) {
+      const sprints = await jira.spin('Retrieving sprints...', jira.api.getAllSprints(boardId, sprintList.length));
+      sprintList = sprintList.concat(sprints.values);
+      if (sprintList.length >= sprints.total) break;
+    }
 
-    const sprints = sprintList.values.filter(sprint => sprint.state === 'active' || sprint.state === 'future');
+    const sprints = sprintList.filter(sprint => sprint.state === 'active' || sprint.state === 'future');
 
     if (sprints.length === 0) {
       return null;
