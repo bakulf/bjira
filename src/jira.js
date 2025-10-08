@@ -20,6 +20,11 @@ class Jira {
     }
 
     this._config = JSON.parse(fs.readFileSync(this.configFile));
+    if (this._config.jira.apiVersion !== 3) {
+      this._config.jira.apiVersion = 3;
+      this.syncConfig();
+    }
+
     this._jiraClient = new jiraClient(this._config.jira);
   }
 

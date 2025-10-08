@@ -149,12 +149,18 @@ class Query extends Command {
 
   static async runQuery(jira, query, expectedResult) {
     let issues = [];
-    let total = 0;
+    let nextPageToken = null;
     while (issues.length < (expectedResult === undefined ? issues.length + 1 : expectedResult)) {
       const result = await jira.spin('Running query...',
-        jira.api.searchJira(query, {
-          startAt: issues.length,
-          maxResults: expectedResult - issues.length
+        jira.apiRequest('/search/jql', {
+          method: 'POST',
+          followAllRedirects: true,
+          body: {
+            jql: query,
+            nextPageToken,
+            fields: ['*all'],
+            maxResults: Math.min(5000, expectedResult - issues.length)
+          }
         }));
 
       if (result.warningMessages) {
@@ -162,14 +168,14 @@ class Query extends Command {
         return;
       }
 
-      total = result.total;
       issues = issues.concat(result.issues);
+      nextPageToken = result.nextPageToken;
 
-      if (issues.length >= total) break;
+      if (result.isLast) break;
     }
 
     return {
-      total,
+      total: issues.length,
       issues
     };
   }
