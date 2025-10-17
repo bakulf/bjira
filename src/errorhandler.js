@@ -5,7 +5,7 @@
 import Table from './table.js';
 
 class ErrorHandler {
-  static showError(jira, e) {
+  static showError(e) {
     const table = new Table({
       head: ['Errors']
     });
@@ -35,7 +35,7 @@ class ErrorHandler {
     console.log(table.toString());
   }
 
-  static showWarningMessages(jira, messages) {
+  static showWarningMessages(messages) {
     const table = new Table({
       head: ['Warnings']
     });

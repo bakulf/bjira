@@ -10,7 +10,7 @@ $ npm install -g bjira
 
 ## How to configure it
 
-Run `bjira init` to set up the tool. You can optain the API token from your
+Run `bjira init` to set up the tool. You can obtain the API token from your
 jira settings.
 
 ```
@@ -70,4 +70,4 @@ bjira field add FOO Story "Story Points"
 ```
 
 Any custom fields added to the list will be shown in the issue report (See `bjira show`).
-You can also set custom fields using `bira set custom `Story Points' ISSUE-ID`.
+You can also set custom fields using `bjira set custom 'Story Points' ISSUE-ID`.

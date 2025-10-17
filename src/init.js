@@ -21,7 +21,7 @@ class Init extends Command {
             protocol: await Ask.askBoolean('Enable HTTPS Protocol?') ? 'https' : 'http',
             username: (await Ask.askString('Please provide your jira username:')).trim(),
             password: (await Ask.askPassword('API token:')).trim(),
-            apiVersion: '3',
+            apiVersion: 3,
             strictSSL: true,
           },
           presets: {},

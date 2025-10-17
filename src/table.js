@@ -46,8 +46,9 @@ class Table {
     this._columns.forEach(column => this._computeColumnWidth(column));
 
     const totalWidth = this._columns.reduce((x, column) => x + column.width, this._columns.length - 1);
-    if (totalWidth > process.stdout.columns) {
-      this._resizeWidthOf(totalWidth - process.stdout.columns + (this._columns.length - 1));
+    const availableColumns = (process.stdout && process.stdout.columns) ? process.stdout.columns : 120;
+    if (totalWidth > availableColumns) {
+      this._resizeWidthOf(totalWidth - availableColumns + (this._columns.length - 1));
     }
 
     const lines = [];

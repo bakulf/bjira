@@ -13,7 +13,7 @@ class Comment extends Command {
       .argument('<id>', 'The issue ID')
       .action(async id => {
         const comment = await Utils.writeInTempFile();
-        if (!comment === null) {
+        if (comment === null) {
           return;
         }
 

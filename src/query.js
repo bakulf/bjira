@@ -165,7 +165,10 @@ class Query extends Command {
 
       if (result.warningMessages) {
         ErrorHandler.showWarningMessages(result.warningMessages);
-        return;
+        return {
+          total: 0,
+          issues: []
+        };
       }
 
       issues = issues.concat(result.issues);

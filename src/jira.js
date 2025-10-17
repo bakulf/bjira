@@ -100,7 +100,7 @@ class Jira {
       return result;
     } catch (e) {
       spinner.stop();
-      ErrorHandler.showError(this, e);
+      ErrorHandler.showError(e);
       process.exit(1);
     }
   }

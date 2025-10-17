@@ -208,7 +208,7 @@ class Issue extends Command {
   static replaceFields(obj, fields) {
     if (Array.isArray(obj)) {
       obj.forEach((o, pos) => {
-        obj[o] = Issue.replaceFields(o, fields);
+        obj[pos] = Issue.replaceFields(o, fields);
       });
     } else if (obj && typeof obj === "object") {
       Object.keys(obj).forEach(key => {
