@@ -58,8 +58,7 @@ class Create extends Command {
           .issuetypes.find(i => i.name === issueType.name).fields;
         const requiredFields = Object.keys(issueFields).filter(
           key => issueFields[key].required &&
-          Field.isSupported(issueFields[key]) &&
-          !["issuetype", "summary", "description", "project"].includes(key)).map(key => issueFields[key]);
+          Field.isSupported(issueFields[key]) && ["issuetype", "summary", "description", "project"].includes(key) === false).map(key => issueFields[key]);
 
         for (const field of requiredFields) {
           const fieldData = await Field.askFieldIfSupported(field);
@@ -68,18 +67,28 @@ class Create extends Command {
 
         if (issueType.name !== 'Epic' &&
           await Ask.askBoolean('Do you want to set a parent epic?')) {
-          const result = await Query.runQuery(jira, `project = "${project.key}" and type = "epic"`, 999999);
-          if (!result.issues || result.issues.length === 0) {
-            console.log("No epics yet.");
-          } else {
-            const resultFields = await Field.listFields(jira);
-            result.issues.forEach(epic => Issue.replaceFields(epic, resultFields));
+          const parentKey = await Ask.askCallback('Choose the epic:', async (input) => {
+            if (!input) return [];
 
-            const parentKey = await Ask.askList('Choose the epic:',
-              result.issues.map(epic => ({
-                name: `${epic.key} - ${epic.fields['Summary']}`,
-                value: epic.key
-              })));
+            const jql = `issuetype = \"Epic\" AND (summary ~ \"${input}\" OR key ~ \"${input}\") ORDER BY updated DESC`;
+            const result = await jira.apiRequest('/search/jql', {
+              method: 'POST',
+              followAllRedirects: true,
+              body: {
+                jql,
+                fields: ['summary', 'key'],
+                maxResults: 20
+              }
+            });
+
+            if (!result.issues) return [];
+            return result.issues.map(epic => ({
+              name: `${epic.key} - ${epic.fields.summary}`,
+              value: epic.key
+            }));
+          });
+
+          if (parentKey) {
             newIssue.fields.parent = {
               key: parentKey
             };
