@@ -21,7 +21,7 @@ class Issue extends Command {
       .description('Show an issue')
       .option('-a, --attachments', 'Show the attachments too')
       .option('-C, --comments', 'Show the comments too')
-      .option('-s, --subissues', 'Show the comments too')
+      .option('-s, --subissues', 'Show the subissues too')
       .argument('<id>', 'The issue ID')
       .action(async id => {
         const jira = new Jira(program);

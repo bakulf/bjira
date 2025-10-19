@@ -29,7 +29,11 @@ class Table {
       this._columns[pos].rows.push(field);
     });
 
-    for (let i = row.length; i < this._columns.length; ++i) this._columns[i].rows.push({});
+    for (let i = row.length; i < this._columns.length; ++i) {
+      this._columns[i].rows.push({
+        text: [""]
+      });
+    }
 
     ++this._rows;
   }
@@ -147,9 +151,9 @@ class Table {
 
   _resizeWidthOfOne() {
     const max = Math.max(...this._columns.map(column => column.width));
-    for (let columnId in this._columns) {
-      const column = this._columns[columnId];
-      if (!this._unresizableColumns.includes(columnId) && column.width === max) {
+    for (let i = 0; i < this._columns.length; ++i) {
+      const column = this._columns[i];
+      if (!this._unresizableColumns.includes(i) && column.width === max) {
         --column.width;
         break;
       }

@@ -15,7 +15,7 @@ class Jira {
 
     if (!fs.existsSync(this.configFile)) {
       console.log(`Config file ${this.configFile} does not exist.`);
-      process.exit();
+      process.exit(1);
       return;
     }
 
