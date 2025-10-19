@@ -29,12 +29,12 @@ class Query extends Command {
         const resultFields = await Field.listFields(jira);
         const result = await Query.runQuery(jira, query, opts.limit);
 
-        await Query.showIssues(jira, result.issues, result.total, resultFields, opts.grouped);
+        await Query.showIssues(jira, result.issues, result.isLast, resultFields, opts.grouped);
       });
   }
 
-  static async showIssues(jira, issues, total, fields, grouped) {
-    console.log(`Showing ${color.bold(issues.length)} issues of ${color.bold(total)}`);
+  static async showIssues(jira, issues, isLast, fields, grouped) {
+    console.log(`Showing ${color.bold(issues.length)} issues of ${isLast ? color.bold(issues.length) : "more"}`);
 
     issues = issues.map(issue => Issue.replaceFields(issue, fields)).map(issue => ({
       children: [],
@@ -150,6 +150,7 @@ class Query extends Command {
   static async runQuery(jira, query, expectedResult) {
     let issues = [];
     let nextPageToken = null;
+    let isLast = true;
     while (issues.length < (expectedResult === undefined ? issues.length + 1 : expectedResult)) {
       const result = await jira.spin('Running query...',
         jira.apiRequest('/search/jql', {
@@ -166,19 +167,20 @@ class Query extends Command {
       if (result.warningMessages) {
         ErrorHandler.showWarningMessages(result.warningMessages);
         return {
-          total: 0,
+          isLast: true,
           issues: []
         };
       }
 
       issues = issues.concat(result.issues);
       nextPageToken = result.nextPageToken;
+      isLast = result.isLast;
 
-      if (result.isLast) break;
+      if (isLast) break;
     }
 
     return {
-      total: issues.length,
+      isLast,
       issues
     };
   }
