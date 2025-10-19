@@ -22,6 +22,7 @@ import Query from './query.js';
 import Run from './run.js';
 import Set from './set.js';
 import Sprint from './sprint.js';
+import Open from './open.js';
 
 const DEFAULT_CONFIG_FILE = path.join(os.homedir(), ".bjira.json")
 
@@ -39,6 +40,7 @@ const commands = [
   new Run(),
   new Set(),
   new Sprint(),
+  new Open(),
 ];
 
 const pjson = JSON.parse(fs.readFileSync(new URL("../package.json",

@@ -13,12 +13,18 @@ class Set extends Command {
   addOptions(program) {
     const setCmd = program.command('set')
       .description('Update fields in an issue');
-    setCmd.command('assignee')
+    const assigneeCmd = setCmd.command('assignee')
       .description('Assign the issue to somebody')
+      .option('--me', 'Assign the issue to the current user')
       .argument('<ID>', 'The issue ID')
       .action(async id => {
         const jira = new Jira(program);
-        await Set.assignIssue(jira, id);
+        const opts = assigneeCmd.opts();
+        if (opts.me) {
+          await Set.assignToMe(jira, id);
+        } else {
+          await Set.assignIssue(jira, id);
+        }
       });
 
     setCmd.command('unassign')
@@ -86,6 +92,19 @@ class Set extends Command {
         }
       }
     }
+
+    await jira.spin(`Updating issue ${id}...`, jira.api.updateIssue(id, issue));
+  }
+
+  static async assignToMe(jira, id) {
+    const me = await jira.spin('Retrieving current user...', jira.api.getCurrentUser());
+    const issue = {
+      fields: {
+        assignee: {
+          accountId: me.accountId
+        }
+      }
+    };
 
     await jira.spin(`Updating issue ${id}...`, jira.api.updateIssue(id, issue));
   }
