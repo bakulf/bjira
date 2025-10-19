@@ -25,7 +25,7 @@ class Table {
       if (typeof field !== "object") field = {
         text: field
       };
-      field.text = ("" + field.text).split("\n");
+      field.text = ("" + (field.text === undefined ? "" : field.text)).split("\n");
       this._columns[pos].rows.push(field);
     });
 

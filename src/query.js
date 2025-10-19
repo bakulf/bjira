@@ -159,7 +159,7 @@ class Query extends Command {
             jql: query,
             nextPageToken,
             fields: ['*all'],
-            maxResults: Math.min(5000, expectedResult - issues.length)
+            maxResults: 20,
           }
         }));
 

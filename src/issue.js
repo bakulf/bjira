@@ -78,6 +78,12 @@ class Issue extends Command {
             'Labels', issue.fields['Labels'].join(', ')
           ],
           [
+            'Parent', {
+              color: "yellow",
+              text: issue.fields['Parent']?.key
+            }
+          ],
+          [
             'Sprint', {
               color: "yellow",
               text: issue.fields['Sprint']?.map(sprint => this.showSprint(sprint)).join(', ')
@@ -192,7 +198,7 @@ class Issue extends Command {
 
         if (cmd.opts().subissues) {
           console.log("\nSub-issues:");
-          const children = await Query.runQuery(jira, `parent = "${id}"`, 999999);
+          const children = await Query.runQuery(jira, `parent = "${id}"`);
           await Query.showIssues(jira, children.issues, children.total, resultFields, false);
 
           if (issue.fields['Issue Type'].name === 'Epic') {

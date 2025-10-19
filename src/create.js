@@ -68,9 +68,30 @@ class Create extends Command {
         if (issueType.name !== 'Epic' &&
           await Ask.askBoolean('Do you want to set a parent epic?')) {
           const parentKey = await Ask.askCallback('Choose the epic:', async (input) => {
-            if (!input) return [];
+            // Default suggestions: epics in the same project, most recently updated, not done.
+            if (!input) {
+              const jql = `project = \"${project.key}\" AND issuetype = \"Epic\" AND statusCategory != Done ORDER BY updated DESC`;
+              const result = await jira.apiRequest('/search/jql', {
+                method: 'POST',
+                followAllRedirects: true,
+                body: {
+                  jql,
+                  fields: ['summary', 'key'],
+                  maxResults: 20
+                }
+              });
 
-            const jql = `issuetype = \"Epic\" AND (summary ~ \"${input}\" OR key ~ \"${input}\") ORDER BY updated DESC`;
+              if (!result.issues) return [];
+              return result.issues.map(epic => ({
+                name: `${epic.key} - ${epic.fields.summary}`,
+                value: epic.key
+              }));
+            }
+
+            // As-you-type search: allow partial matches via wildcard.
+            const inputWithWildcard = `${input}*`;
+            // Search epics by key or summary across projects, matching prefixes.
+            const jql = `issuetype = \"Epic\" AND (summary ~ \"${inputWithWildcard}\" OR key ~ \"${inputWithWildcard}\") ORDER BY updated DESC`;
             const result = await jira.apiRequest('/search/jql', {
               method: 'POST',
               followAllRedirects: true,
