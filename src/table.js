@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: MIT
 
 import color from 'chalk';
+import stringWidth from 'string-width';
 
 class Table {
   constructor(options) {
@@ -180,10 +181,10 @@ class Table {
     return color[row.color].apply(null, [text]);
   }
 
-  // Returns the visible length of a string, ignoring ANSI escape codes.
+  // Returns the display width of a string (ANSI-aware, CJK/emoji aware).
   _visibleLength(str) {
     if (!str) return 0;
-    return ("" + str).replace(this._ansiRegex(), "").length;
+    return stringWidth("" + str);
   }
 
   // Truncate a string to a target visible width, preserving ANSI codes and
@@ -193,26 +194,24 @@ class Table {
     const input = "" + (str || "");
     const ansi = this._ansiRegex();
     let out = "";
-    let visible = 0;
     let i = 0;
-    while (i < input.length && visible < width) {
+    while (i < input.length) {
       const ch = input[i];
       if (ch === "\u001b") {
-        // Copy the whole ANSI sequence through
         const match = input.slice(i).match(ansi);
         if (match && match.index === 0) {
           out += match[0];
           i += match[0].length;
           continue;
         }
-        // If it's an ESC but not matching regex, skip it safely
         out += ch;
         i++;
         continue;
       }
-      out += ch;
+      const candidate = out + ch;
+      if (stringWidth(candidate) > width) break;
+      out = candidate;
       i++;
-      visible++;
     }
 
     // If we truncated before natural end, ensure we reset styles.

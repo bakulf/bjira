@@ -33,6 +33,7 @@
     "inquirer-checkbox-plus-prompt": "^1.0.1",
     "jira-client": "^6.23.0",
     "ora": "^6.0.1",
+    "string-width": "^5.1.2",
     "temp": "^0.9.4"
   }
 }
