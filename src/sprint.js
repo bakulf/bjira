@@ -131,7 +131,7 @@ class Sprint extends Command {
           for (let i = 0; i < maxIssues; ++i) {
             const line = statuses.map(status => {
               if (status.issues.length > i) {
-                return `${status.issues[i].key} ${status.issues[i].fields['Summary'].trim()}`
+                return `${color.yellow(status.issues[i].key)} ${status.issues[i].fields['Summary'].trim()}`
               }
               return ""
             });

@@ -82,10 +82,10 @@ class Table {
 
   _computeColumnWidth(column) {
     column.width = Math.max(...column.rows.map(row =>
-      Math.max(...row.text.map(line => line.length))
+      Math.max(...row.text.map(line => this._visibleLength(line)))
     ));
 
-    if (column.head) column.width = Math.max(column.width, column.head.length);
+    if (column.head) column.width = Math.max(column.width, this._visibleLength(column.head));
   }
 
   _computeRowHeight(column, row) {
@@ -95,13 +95,13 @@ class Table {
   _toWidth(str, width, spaces) {
     str = str || "";
 
-    let strLength = str.length;
+    let strLength = this._visibleLength(str);
     if (strLength > width) {
-      return this._truncate(str, width - 1) + "…";
+      return this._truncateVisible(str, width - 1) + "…";
     }
 
     if (spaces) {
-      for (let strLength = str.length; strLength < width; ++strLength) str += " ";
+      while (this._visibleLength(str) < width) str += " ";
     }
     return str;
   }
@@ -127,14 +127,14 @@ class Table {
   }
 
   _maybeSplitRow(row, width) {
-    if (row.length <= width) return [row];
+    if (this._visibleLength(row) <= width) return [row];
 
     const rows = [];
     let currentRow = "";
     for (let part of row.split(" ")) {
       if (currentRow.length === 0) {
         currentRow = part;
-      } else if ((currentRow.length + part.length + 1) < width) {
+      } else if ((this._visibleLength(currentRow) + this._visibleLength(part) + 1) < width) {
         currentRow += " " + part;
       } else {
         rows.push(currentRow);
@@ -161,7 +161,7 @@ class Table {
   }
 
   _truncate(str, width) {
-    return str.slice(0, width);
+    return this._truncateVisible(str, width);
   }
 
   _stylize(row, text) {
@@ -178,6 +178,53 @@ class Table {
     }
 
     return color[row.color].apply(null, [text]);
+  }
+
+  // Returns the visible length of a string, ignoring ANSI escape codes.
+  _visibleLength(str) {
+    if (!str) return 0;
+    return ("" + str).replace(this._ansiRegex(), "").length;
+  }
+
+  // Truncate a string to a target visible width, preserving ANSI codes and
+  // ensuring styles are reset if we cut before a reset sequence.
+  _truncateVisible(str, width) {
+    if (width <= 0) return "";
+    const input = "" + (str || "");
+    const ansi = this._ansiRegex();
+    let out = "";
+    let visible = 0;
+    let i = 0;
+    while (i < input.length && visible < width) {
+      const ch = input[i];
+      if (ch === "\u001b") {
+        // Copy the whole ANSI sequence through
+        const match = input.slice(i).match(ansi);
+        if (match && match.index === 0) {
+          out += match[0];
+          i += match[0].length;
+          continue;
+        }
+        // If it's an ESC but not matching regex, skip it safely
+        out += ch;
+        i++;
+        continue;
+      }
+      out += ch;
+      i++;
+      visible++;
+    }
+
+    // If we truncated before natural end, ensure we reset styles.
+    if (i < input.length) {
+      out += "\u001b[0m";
+    }
+    return out;
+  }
+
+  _ansiRegex() {
+    // eslint-disable-next-line no-control-regex
+    return /\u001B\[[0-?]*[ -\/]*[@-~]/g;
   }
 };
 
