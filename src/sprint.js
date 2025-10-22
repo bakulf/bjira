@@ -110,7 +110,7 @@ class Sprint extends Command {
         if (showCmd.opts().all) {
           filteredUsers = User.sortUsers(currentUser, users);
         } else {
-          filteredUsers = [users.find(user => user.accountId === currentUser.accountId)];
+          filteredUsers = users.filter(user => user.accountId === currentUser.accountId);
         }
 
         filteredUsers.forEach(user => {
