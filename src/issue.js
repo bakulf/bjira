@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: MIT
 
 import Command from './command.js';
+import Comment from './comment.js';
 import Field from './field.js';
 import Jira from './jira.js';
 import Project from './project.js';
@@ -188,7 +189,7 @@ class Issue extends Command {
                 'Updated on', comment['Updated']
               ],
               [
-                'Body', Issue.showComment(comment.body)
+                'Body', Comment.showComment(comment.body)
               ],
             ]);
           });
@@ -241,37 +242,6 @@ class Issue extends Command {
     let str = user.displayName;
     if (user.emailAddress) str += ` (${user.emailAddress})`;
     return str;
-  }
-
-  static showComment(obj) {
-    if (typeof obj === "string") return obj;
-
-    switch (obj.type) {
-      case 'doc':
-      case 'paragraph':
-        return obj.content.map(a => Issue.showComment(a)).join("");
-
-      case 'text':
-        return obj.text;
-
-      case 'inlineCard':
-        return obj.attrs.url;
-
-      case 'status':
-      case 'mention':
-      case 'emoji':
-        return obj.attrs.text;
-
-      case 'hardBreak':
-        return '\n';
-
-      case 'date':
-        const date = new Date(obj.attrs.timestamp * 1000);
-        return date.toLocaleString();
-
-      default:
-        return '';
-    }
   }
 
   showEpicIssue(issue) {
