@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2021-2022 Andrea Marchesini <baku@bnode.dev>
+// SPDX-FileCopyrightText: 2021-2026 Andrea Marchesini <baku@bnode.dev>
 //
 // SPDX-License-Identifier: MIT
 
@@ -6,6 +6,7 @@ import color from 'chalk';
 
 import Ask from './ask.js';
 import Command from './command.js';
+import ADF from './adf.js';
 import Field from './field.js';
 import Jira from './jira.js';
 import Issue from './issue.js';
@@ -50,7 +51,7 @@ class Create extends Command {
         if (await Ask.askBoolean('Do you want to write a description?')) {
           const description = await Utils.writeInTempFile();
           if (description) {
-            newIssue.fields.description = description;
+            newIssue.fields.description = ADF.create(description);
           }
         }
 

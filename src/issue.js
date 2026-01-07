@@ -1,9 +1,10 @@
-// SPDX-FileCopyrightText: 2021-2022 Andrea Marchesini <baku@bnode.dev>
+// SPDX-FileCopyrightText: 2021-2026 Andrea Marchesini <baku@bnode.dev>
 //
 // SPDX-License-Identifier: MIT
 
 import Command from './command.js';
 import Comment from './comment.js';
+import ADF from './adf.js';
 import Field from './field.js';
 import Jira from './jira.js';
 import Project from './project.js';
@@ -189,7 +190,7 @@ class Issue extends Command {
                 'Updated on', comment['Updated']
               ],
               [
-                'Body', Comment.showComment(comment.body)
+                'Body', ADF.show(comment.body)
               ],
             ]);
           });
