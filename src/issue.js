@@ -239,6 +239,22 @@ class Issue extends Command {
             }
             console.log(linkedTable.toString());
           }
+
+          const remoteLinks = await jira.spin('Fetching remote links...', jira.apiRequest(`/issue/${id}/remotelink`));
+          if (remoteLinks && remoteLinks.length > 0) {
+            console.log("\nRemote links:");
+            const remoteTable = new Table({
+              head: ['Relation', 'Title', 'URL'],
+            });
+            for (const link of remoteLinks) {
+              remoteTable.addRow([
+                link.relationship || '',
+                link.object?.title || '',
+                { color: 'blue', text: link.object?.url || '' },
+              ]);
+            }
+            console.log(remoteTable.toString());
+          }
         }
 
       });
