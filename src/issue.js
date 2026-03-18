@@ -23,7 +23,7 @@ class Issue extends Command {
       .description('Show an issue')
       .option('-a, --attachments', 'Show the attachments too')
       .option('-C, --comments', 'Show the comments too')
-      .option('-s, --subissues', 'Show the subissues too')
+      .option('-s, --subissues', 'Show sub-issues, epic issues, and linked issues')
       .argument('<id>', 'The issue ID')
       .action(async id => {
         const jira = new Jira(program);
@@ -207,6 +207,37 @@ class Issue extends Command {
             console.log("\nEpic issues:");
             const children = await jira.spin('Fetching child issues...', jira.api.getIssuesForEpic(id));
             await Query.showIssues(jira, children.issues, children.isLast, resultFields, false);
+          }
+
+          const issueLinksFieldName = resultFields.find(f => f.key === 'issuelinks')?.name || 'Issue Links';
+          const issueLinks = issue.fields[issueLinksFieldName];
+          if (issueLinks && issueLinks.length > 0) {
+            console.log("\nLinked issues:");
+            const linkedTable = new Table({
+              head: ['Relation', 'Key', 'Status', 'Type', 'Assignee', 'Summary'],
+              unresizableColumns: [0, 1],
+            });
+            const summaryField = resultFields.find(f => f.key === 'summary')?.name || 'Summary';
+            const statusField = resultFields.find(f => f.key === 'status')?.name || 'Status';
+            const typeField = resultFields.find(f => f.key === 'issuetype')?.name || 'Issue Type';
+            const assigneeField = resultFields.find(f => f.key === 'assignee')?.name || 'Assignee';
+            for (const link of issueLinks) {
+              const linkedStub = link.inwardIssue || link.outwardIssue;
+              const direction = link.inwardIssue ? link.type.inward : link.type.outward;
+              if (linkedStub) {
+                const linkedResult = await jira.spin(`Fetching ${linkedStub.key}...`, jira.api.findIssue(linkedStub.key));
+                const linked = Issue.replaceFields(linkedResult, resultFields);
+                linkedTable.addRow([
+                  direction,
+                  { color: 'blue', text: linked.key },
+                  { color: 'green', text: linked.fields?.[statusField]?.name || '' },
+                  { color: 'green', text: linked.fields?.[typeField]?.name || '' },
+                  { color: 'yellow', text: Issue.showUser(linked.fields?.[assigneeField]) },
+                  linked.fields?.[summaryField] || '',
+                ]);
+              }
+            }
+            console.log(linkedTable.toString());
           }
         }
 
