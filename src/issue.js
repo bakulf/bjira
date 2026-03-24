@@ -124,7 +124,7 @@ class Issue extends Command {
             '', ''
           ],
           [
-            'Description', issue.fields['Description']
+            'Description', ADF.show(issue.fields['Description'])
           ],
           [
             '', ''
