@@ -19,6 +19,7 @@ class ADF {
   }
 
   static show(obj) {
+    if (!obj) return '';
     if (typeof obj === "string") return obj;
 
     switch (obj.type) {
