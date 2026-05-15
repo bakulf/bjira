@@ -25,6 +25,7 @@ class ADF {
     switch (obj.type) {
       case 'doc':
       case 'paragraph':
+        if (!obj.content) return '';
         return obj.content.map(a => ADF.show(a)).join("");
 
       case 'text':
